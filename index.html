@@ -1,0 +1,2028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="HEP Training">
+<title>Hybrid Engine Pro</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --teal: #1A7A6E;
+  --teal-light: #E6F4F2;
+  --teal-mid: #0F6E56;
+  --teal-dark: #085041;
+  --orange: #E8833A;
+  --orange-light: #FEF3EB;
+  --red: #A32D2D;
+  --red-light: #FCEBEB;
+  --purple: #534AB7;
+  --purple-light: #EEEDFE;
+  --pink: #D4537E;
+  --pink-light: #FBEAF0;
+  --green: #3B6D11;
+  --green-light: #EAF3DE;
+  --bg: #F5F5F3;
+  --surface: #FFFFFF;
+  --surface2: #F7F7F5;
+  --border: rgba(0,0,0,0.1);
+  --border2: rgba(0,0,0,0.18);
+  --text1: #1A1A1A;
+  --text2: #5A5A5A;
+  --text3: #999999;
+  --radius: 10px;
+  --radius-sm: 7px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --teal: #2A9D8F;
+    --teal-light: #0D2E2A;
+    --teal-mid: #3BB5A5;
+    --orange: #F4A261;
+    --orange-light: #2D1E0F;
+    --red: #E76F6F;
+    --red-light: #2D1010;
+    --purple: #9B8FE8;
+    --purple-light: #1A1730;
+    --pink: #E88AB0;
+    --pink-light: #2D1020;
+    --green: #6AB04C;
+    --green-light: #122008;
+    --bg: #0F0F0F;
+    --surface: #1C1C1E;
+    --surface2: #2C2C2E;
+    --border: rgba(255,255,255,0.1);
+    --border2: rgba(255,255,255,0.2);
+    --text1: #F2F2F7;
+    --text2: #AEAEB2;
+    --text3: #636366;
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text1); min-height: 100vh; }
+.app { max-width: 430px; margin: 0 auto; background: var(--bg); min-height: 100vh; display: flex; flex-direction: column; }
+.topbar { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 14px 16px 10px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+.topbar-title { font-size: 16px; font-weight: 600; color: var(--text1); }
+.topbar-sub { font-size: 12px; color: var(--text2); margin-top: 1px; }
+.nav { background: var(--surface); border-top: 0.5px solid var(--border); display: flex; position: sticky; bottom: 0; z-index: 100; padding-bottom: var(--safe-bottom); }
+.nav-btn { flex: 1; padding: 8px 2px 10px; border: none; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--text3); font-size: 10px; font-family: inherit; }
+.nav-btn.active { color: var(--teal); }
+.content { flex: 1; padding: 12px; overflow-y: auto; }
+.card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
+.card-hdr { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+.pill { display: inline-flex; align-items: center; border-radius: 20px; padding: 3px 9px; font-size: 11px; font-weight: 600; }
+.pt { background: var(--teal-light); color: var(--teal-mid); }
+.po { background: var(--orange-light); color: var(--orange); }
+.pr { background: var(--red-light); color: var(--red); }
+.pp { background: var(--pink-light); color: var(--pink); }
+.pg { background: var(--green-light); color: var(--green); }
+.sec-lbl { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin: 12px 0 6px; }
+.wk-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.wk-btn { background: none; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); padding: 6px 14px; cursor: pointer; font-size: 13px; color: var(--text2); font-family: inherit; }
+.day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 12px; }
+.day-chip { padding: 6px 2px; border-radius: var(--radius-sm); text-align: center; cursor: pointer; border: 0.5px solid transparent; background: var(--surface2); }
+.day-chip.active { background: var(--teal); border-color: var(--teal); }
+.day-chip.active .dc-name, .day-chip.active .dc-date { color: white; }
+.day-chip.haslog { border-color: var(--teal); }
+.day-chip.haslog .dc-name, .day-chip.haslog .dc-date { color: var(--teal); }
+.day-chip.offday { opacity: 0.35; cursor: default; }
+.day-chip.camping { background: var(--green-light); border-color: var(--green); }
+.day-chip.camping .dc-name, .day-chip.camping .dc-date { color: var(--green); }
+.day-chip.travel { background: var(--pink-light); border-color: var(--pink); }
+.day-chip.travel .dc-name, .day-chip.travel .dc-date { color: var(--pink); }
+.dc-name { font-size: 11px; font-weight: 600; color: var(--text1); }
+.dc-date { font-size: 9px; color: var(--text2); margin-top: 1px; }
+.sess-block { border: 0.5px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 8px; overflow: hidden; }
+.sess-hdr { padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: var(--surface2); }
+.sess-title { font-size: 14px; font-weight: 600; color: var(--text1); }
+.sess-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.sess-body { padding: 12px; border-top: 0.5px solid var(--border); }
+.chev { font-size: 10px; color: var(--text3); display: inline-block; transition: transform 0.15s; }
+.chev.open { transform: rotate(90deg); }
+.ex-row { padding: 8px 0; border-bottom: 0.5px solid var(--border); }
+.ex-row:last-child { border-bottom: none; }
+.ex-name { font-size: 13px; font-weight: 600; color: var(--text1); }
+.ex-meta { font-size: 11px; color: var(--text2); margin-top: 2px; }
+.ex-note { font-size: 11px; color: var(--teal); margin-top: 2px; }
+.wu-step { display: flex; gap: 9px; padding: 6px 0; border-bottom: 0.5px solid var(--border); align-items: flex-start; }
+.wu-step:last-child { border-bottom: none; }
+.wu-num { width: 20px; height: 20px; border-radius: 50%; background: var(--teal-light); color: var(--teal-mid); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.wu-txt { font-size: 12px; color: var(--text1); line-height: 1.45; }
+.thr-blk { background: var(--teal-light); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 8px; }
+.thr-title { font-size: 11px; font-weight: 700; color: var(--teal-mid); margin-bottom: 3px; }
+.thr-desc { font-size: 11px; color: var(--teal-mid); line-height: 1.5; }
+.plyo-blk { background: var(--purple-light); border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 8px; }
+.plyo-title { font-size: 11px; font-weight: 700; color: var(--purple); margin-bottom: 3px; }
+.plyo-desc { font-size: 11px; color: var(--purple); line-height: 1.5; }
+.travel-blk { background: var(--pink-light); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 10px; }
+.travel-title { font-size: 14px; font-weight: 700; color: var(--pink); margin-bottom: 4px; }
+.travel-desc { font-size: 12px; color: var(--pink); line-height: 1.5; }
+.set-row { display: grid; grid-template-columns: 22px 1fr 1fr 28px; gap: 5px; align-items: center; margin-bottom: 5px; }
+.set-num { font-size: 11px; color: var(--text3); text-align: center; }
+.set-in { width: 100%; font-size: 13px; padding: 6px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: var(--surface); color: var(--text1); font-family: inherit; text-align: center; }
+.set-in:focus { outline: none; border-color: var(--teal); }
+.set-del { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 16px; line-height: 1; }
+.set-lbl-row { display: grid; grid-template-columns: 22px 1fr 1fr 28px; gap: 5px; margin-bottom: 4px; }
+.set-lbl { font-size: 10px; color: var(--text3); text-align: center; text-transform: uppercase; letter-spacing: 0.04em; }
+.hrv-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.hrv-btn { flex: 1; padding: 9px 4px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: none; cursor: pointer; font-size: 13px; font-family: inherit; font-weight: 600; color: var(--text2); }
+.hrv-btn.hg { background: var(--green-light); border-color: var(--green); color: var(--green); }
+.hrv-btn.ho { background: var(--orange-light); border-color: var(--orange); color: var(--orange); }
+.hrv-btn.hr { background: var(--red-light); border-color: var(--red); color: var(--red); }
+.hrv-proto { border-radius: var(--radius-sm); padding: 9px 11px; margin-bottom: 8px; font-size: 12px; line-height: 1.5; }
+.hrv-proto.green { background: var(--green-light); color: var(--green); }
+.hrv-proto.orange { background: var(--orange-light); color: var(--orange); }
+.hrv-proto.red { background: var(--red-light); color: var(--red); }
+.upload-zone { border: 1.5px dashed var(--border2); border-radius: var(--radius-sm); padding: 20px; text-align: center; cursor: pointer; margin-bottom: 8px; background: var(--surface2); }
+.upload-zone:active { border-color: var(--teal); background: var(--teal-light); }
+.up-preview { width: 100%; border-radius: var(--radius-sm); max-height: 180px; object-fit: cover; margin-top: 8px; }
+.f-row { margin-bottom: 10px; }
+.f-row label { font-size: 11px; font-weight: 600; color: var(--text2); display: block; margin-bottom: 4px; }
+.f-row input, .f-row select, .f-row textarea { width: 100%; font-size: 13px; padding: 8px 10px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: var(--surface); color: var(--text1); font-family: inherit; -webkit-appearance: none; }
+.f-row input:focus, .f-row textarea:focus { outline: none; border-color: var(--teal); }
+.f-row textarea { min-height: 70px; resize: none; line-height: 1.5; }
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.p-btn { width: 100%; padding: 13px; background: var(--teal); color: white; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 4px; letter-spacing: 0.01em; }
+.p-btn:active { opacity: 0.85; transform: scale(0.99); }
+.s-btn { width: 100%; padding: 10px; background: none; color: var(--teal); border: 1px solid var(--teal); border-radius: var(--radius-sm); font-size: 13px; cursor: pointer; font-family: inherit; margin-top: 6px; font-weight: 600; }
+.sum-card { border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; border: 0.5px solid var(--border); }
+.sum-hdr { background: var(--teal); padding: 11px 14px; }
+.sum-hdr-title { font-size: 14px; font-weight: 700; color: white; }
+.sum-hdr-sub { font-size: 11px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+.sum-body { padding: 12px; background: var(--surface); }
+.flag { display: flex; gap: 9px; align-items: flex-start; padding: 7px 0; border-bottom: 0.5px solid var(--border); }
+.flag:last-child { border-bottom: none; }
+.f-dot { width: 7px; height: 7px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+.f-good { background: var(--green); }
+.f-warn { background: var(--orange); }
+.f-info { background: var(--teal); }
+.f-lbl { font-size: 10px; font-weight: 700; color: var(--text2); margin-bottom: 1px; text-transform: uppercase; letter-spacing: 0.04em; }
+.f-txt { font-size: 12px; color: var(--text1); line-height: 1.45; }
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.stat-card { background: var(--surface2); border-radius: var(--radius-sm); padding: 10px 12px; }
+.stat-lbl { font-size: 10px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
+.stat-val { font-size: 22px; font-weight: 700; color: var(--text1); }
+.stat-sub { font-size: 10px; color: var(--text2); margin-top: 2px; }
+.prog-wrap { background: var(--surface2); border-radius: 20px; height: 6px; margin-top: 5px; overflow: hidden; }
+.prog-bar { height: 100%; background: var(--teal); border-radius: 20px; transition: width 0.4s; }
+.tab-row { display: flex; margin-bottom: 12px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); overflow: hidden; }
+.tab-item { flex: 1; padding: 8px 3px; background: none; border: none; cursor: pointer; font-size: 11px; font-weight: 600; font-family: inherit; color: var(--text2); border-right: 0.5px solid var(--border); }
+.tab-item:last-child { border-right: none; }
+.tab-item.active { background: var(--teal); color: white; }
+.hydro-track { height: 8px; background: var(--surface2); border-radius: 20px; overflow: hidden; margin-bottom: 10px; }
+.hydro-fill { height: 100%; background: var(--teal); border-radius: 20px; transition: width 0.3s; }
+.flow-row { display: flex; gap: 5px; margin-bottom: 8px; }
+.flow-btn { flex: 1; padding: 8px 3px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: none; cursor: pointer; font-size: 11px; font-weight: 600; font-family: inherit; color: var(--text2); text-align: center; }
+.flow-btn.sel { background: var(--pink-light); border-color: var(--pink); color: var(--pink); }
+.sym-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+.sym-btn { padding: 7px 8px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: none; cursor: pointer; font-size: 12px; font-family: inherit; color: var(--text2); text-align: center; }
+.sym-btn.sel { background: var(--pink-light); border-color: var(--pink); color: var(--pink); }
+.ai-think { display: flex; align-items: center; gap: 8px; padding: 11px 13px; background: var(--surface2); border-radius: var(--radius-sm); margin: 8px 0; }
+.ai-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); animation: pulse 1.2s ease-in-out infinite; }
+.ai-dot:nth-child(2) { animation-delay: 0.2s; }
+.ai-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pulse { 0%,80%,100% { opacity: 0.3; } 40% { opacity: 1; } }
+.chart-box { width: 100%; height: 140px; margin-top: 8px; }
+.setup-screen { padding: 24px 20px; }
+.setup-title { font-size: 22px; font-weight: 700; color: var(--text1); margin-bottom: 8px; }
+.setup-sub { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 24px; }
+.setup-step { display: flex; gap: 12px; margin-bottom: 20px; align-items: flex-start; }
+.step-num { width: 28px; height: 28px; border-radius: 50%; background: var(--teal); color: white; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-content { flex: 1; }
+.step-title { font-size: 14px; font-weight: 700; color: var(--text1); margin-bottom: 3px; }
+.step-desc { font-size: 13px; color: var(--text2); line-height: 1.5; }
+.step-desc a { color: var(--teal); text-decoration: none; font-weight: 600; }
+.key-input-wrap { position: relative; margin-top: 20px; }
+.key-input { width: 100%; font-size: 14px; padding: 12px 14px; border: 1.5px solid var(--border2); border-radius: var(--radius-sm); background: var(--surface); color: var(--text1); font-family: inherit; letter-spacing: 0.05em; }
+.key-input:focus { outline: none; border-color: var(--teal); }
+.key-note { font-size: 11px; color: var(--text2); margin-top: 8px; line-height: 1.5; }
+.key-note a { color: var(--teal); font-weight: 600; }
+.warning-box { background: var(--orange-light); border: 0.5px solid var(--orange); border-radius: var(--radius-sm); padding: 10px 13px; margin-bottom: 12px; font-size: 12px; color: var(--orange); line-height: 1.5; }
+.success-box { background: var(--green-light); border: 0.5px solid var(--green); border-radius: var(--radius-sm); padding: 10px 13px; margin-bottom: 12px; font-size: 12px; color: var(--green); line-height: 1.5; font-weight: 600; }
+.settings-icon { cursor: pointer; padding: 4px; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; }
+.modal { background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; padding: 20px; width: 100%; max-width: 430px; margin: 0 auto; padding-bottom: calc(20px + var(--safe-bottom)); }
+.modal-title { font-size: 17px; font-weight: 700; color: var(--text1); margin-bottom: 16px; }
+.modal-close { float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text2); margin-top: -2px; }
+.day-chip.completed { background: var(--teal); border-color: var(--teal); }
+.day-chip.completed .dc-name, .day-chip.completed .dc-date { color: white; }
+.body-zone-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
+.bz { padding: 5px 9px; border: 0.5px solid var(--border2); border-radius: 20px; font-size: 12px; cursor: pointer; color: var(--text2); }
+.bz.sel { background: var(--orange-light); border-color: var(--orange); color: var(--orange); }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="topbar" id="topbar">
+    <div>
+      <div class="topbar-title">Hybrid Engine Pro</div>
+      <div class="topbar-sub" id="topbar-sub">Block 1 · Week 1</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <span id="cycle-badge" class="pill pp" style="display:none"></span>
+      <span id="hrv-badge" class="pill pt">HRV: –</span>
+      <div class="settings-icon" onclick="openSettings()" id="settings-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="content" id="main-content"></div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="goToday()" id="nav-today">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 2v4M13 2v4M3 9h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Today
+    </button>
+    <button class="nav-btn" onclick="showTab('log')" id="nav-log">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M6 10h8M6 14h5M6 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="3" y="2" width="14" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/></svg>Log
+    </button>
+    <button class="nav-btn" onclick="showTab('health')" id="nav-health">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M10 17s-7-4.35-7-9a4 4 0 018 0 4 4 0 018 0c0 4.65-7 9-7 9z" stroke="currentColor" stroke-width="1.5"/></svg>Health
+    </button>
+    <button class="nav-btn" onclick="showTab('progress')" id="nav-progress">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><path d="M3 15l4-4 3 3 4-5 3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 5v12h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Progress
+    </button>
+    <button class="nav-btn" onclick="showTab('plan')" id="nav-plan">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 7v4l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Plan
+    </button>
+  </nav>
+</div>
+
+<div id="settings-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeSettings()">
+  <div class="modal">
+    <div class="modal-title">Settings <button class="modal-close" onclick="closeSettings()">&#215;</button></div>
+    <div class="card-hdr">Anthropic API Key</div>
+    <div id="key-status"></div>
+    <div class="f-row">
+      <label>Your API key (stored locally on this device only)</label>
+      <input type="password" id="api-key-input" placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
+    </div>
+    <p class="key-note">Your key is saved only in this browser's local storage — it never leaves your device except to call the Anthropic API directly. Get your key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys → Create Key.</p>
+    <button class="p-btn" onclick="saveApiKey()" style="margin-top:12px">Save API key</button>
+    <div style="margin-top:16px;padding-top:14px;border-top:0.5px solid var(--border)">
+      <div class="card-hdr">Plan start date</div>
+      <div class="f-row">
+        <label>Week 1 Monday date</label>
+        <input type="date" id="plan-start-input" value="2026-04-06">
+      </div>
+      <button class="s-btn" onclick="savePlanStart()">Update plan start</button>
+    </div>
+    <div style="margin-top:16px;padding-top:14px;border-top:0.5px solid var(--border)">
+      <div class="card-hdr">Backup & Restore</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6">Export your data regularly and save the file to iCloud Drive, Google Drive, or email it to yourself. Use it to restore everything if you ever need to clear Safari data.</div>
+      <button class="p-btn" onclick="exportBackup()">Export backup file</button>
+      <button class="s-btn" style="margin-top:8px" onclick="importBackup()">Restore from backup file</button>
+    </div>
+    <div style="margin-top:16px;padding-top:14px;border-top:0.5px solid var(--border)">
+      <div class="card-hdr" style="color:var(--red)">Danger zone</div>
+      <button class="s-btn" style="border-color:var(--red);color:var(--red)" onclick="if(confirm('Clear all logged data? This cannot be undone.'))clearAllData()">Clear all logged data</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PLAN_START_DEFAULT = (()=>{const p="2026-04-06".split("-");return new Date(+p[0],+p[1]-1,+p[2]);})();
+const CAMPING_START = new Date(2026,5,4);
+const CAMPING_END = new Date(2026,5,7);
+const TRAVEL_START = new Date(2026,5,11);
+const TRAVEL_END = new Date(2026,5,30);
+const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const SYMS = ["Cramps","Bloating","Fatigue","Headache","Mood changes","Breast tenderness","Back pain","Nausea","Insomnia","Energy high"];
+const FLOW_OPTS = ["None","Spotting","Light","Medium","Heavy"];
+const BODY_ZONES = ["Neck","L shoulder","R shoulder","Upper back","Lower back","L hip","R hip","L knee","R knee","L ankle","R ankle","Achilles","Quads","Hamstrings","Calves"];
+
+const WU = {
+  upper: ["Band pull-aparts × 15 — retract scapula fully","Dead hang 20 sec + shoulder rolls × 10 each direction","Scapular push-ups × 10 — protract and retract at top","Arm circles × 10 each direction — full ROM","Cat-cow × 8 — focus on thoracic extension","Wrist circles × 10 each direction"],
+  lower_post: ["Hip circles × 10 each leg — full range","Glute bridges × 15 — squeeze 2 sec at top","Band clamshell × 12 each side — slow","Leg swings forward/back × 10 each leg","Single leg balance 20 sec each side — find stability","Bodyweight RDL × 10 — groove the hinge pattern"],
+  lower_squat: ["Hip circles + leg swings × 10 each side","Goblet squat bodyweight × 10 — 3 sec descent","Lateral band walk × 10 each direction","Split squat bodyweight × 8 each — knee to floor","Ankle circles × 10 each — improve dorsiflexion","Glute bridges × 12 — prime posterior chain"],
+  run: ["30 sec easy jog in place — warm ankles","High knees × 20 — lift to hip height","Butt kicks × 20 — heel to glute","Leg swings forward/back × 10 each leg","A-skips × 10 each — drive knee and arm","Ankle hops × 15 — stiff ankle, minimal knee bend"]
+};
+
+const PLYO_B1_TUE = {
+  title:"Plyometrics — Block 1 Tue (8–10 min)", note:"Bilateral only. Stick every landing for 2 sec.",
+  moves:[
+    {n:"Ankle hops — bilateral",v:"2 × 10",r:"45s",c:"Stiff ankle, quiet feet, rebound from Achilles"},
+    {n:"Lateral step-out hop — low",v:"2 × 8 each",r:"45s",c:"Push from hip, land and hold 2 sec"},
+    {n:"Squat jump — stick landing",v:"2 × 6",r:"60s",c:"Land in full squat, absorb force 2 sec — Week 2+"},
+    {n:"Lateral bound — controlled",v:"2 × 5 each",r:"60s",c:"Knee over toe on landing, hold 2 sec — Week 2+"},
+  ]
+};
+const PLYO_B1_FRI = {
+  title:"Plyometrics — Block 1 Fri (5 min)", note:"Short — threshold run follows at lunch.",
+  moves:[
+    {n:"Ankle hops — bilateral",v:"2 × 8",r:"45s",c:"Quiet landings, ankles do the work"},
+    {n:"Lateral step-out hop",v:"2 × 6 each",r:"45s",c:"Controlled, reset between reps"},
+  ]
+};
+
+const TRAVEL_STR = {
+  id:"tr-str", time:"Anytime", label:"Travel bodyweight strength", dur:"25–30 min ad hoc", warmup:"lower_squat",
+  note:"No equipment needed. Hotel room or outdoor space. Partial sessions count. Do what you can.",
+  exercises:[
+    {n:"Bulgarian split squat — bodyweight",s:3,r:"12 each",l:"Bodyweight",rest:"45s",note:"Use chair or bed for rear foot"},
+    {n:"Push-up — standard or elevated",s:3,r:"12",l:"Bodyweight",rest:"45s",note:"Elevate hands if needed"},
+    {n:"Single leg RDL — bodyweight",s:3,r:"10 each",l:"Bodyweight",rest:"45s",note:"Slow and controlled"},
+    {n:"Single leg glute bridge",s:3,r:"12 each",l:"Bodyweight",rest:"40s",note:"Squeeze 2 sec at top"},
+    {n:"Plank hold",s:3,r:"30 sec",l:"Bodyweight",rest:"30s",note:"Full body tension throughout"},
+    {n:"Dead bug — bodyweight",s:2,r:"8 each",l:"Bodyweight",rest:"30s",note:"Lower back stays flat"},
+  ]
+};
+const TRAVEL_RUN = {
+  id:"tr-run", time:"Anytime", label:"Easy Zone 2 run", dur:"30–45 min whenever possible", warmup:"run",
+  threshold:{title:"Zone 2 only — conversational pace throughout",desc:"No threshold work on this trip. Keep effort low, enjoy the location. Note cadence if wearing Garmin."}
+};
+
+const PLAN = {
+  blocks:[
+    {id:1, name:"Block 1", sub:"Foundation & Tissue Readiness", weeks:[
+      {id:1, name:"Week 1", sub:"Re-Entry", days:{
+        Mon:{type:"rest"},
+        Tue:{type:"train", sessions:[
+          {id:"tu-lift",time:"AM",label:"Upper body + core",dur:"30 min",warmup:"upper",plyo:PLYO_B1_TUE,exercises:[
+            {n:"Pull-up or band-assisted",s:3,r:"6–8",l:"BW / band",rest:"90s",note:"Full hang at bottom"},
+            {n:"Single arm DB row",s:3,r:"10 each",l:"Moderate",rest:"45s",note:"Controlled pull, full ROM"},
+            {n:"Push-up",s:3,r:"10",l:"Bodyweight",rest:"45s",note:"2 sec descent"},
+            {n:"Band face pull",s:2,r:"15",l:"Light band",rest:"30s",note:"Retract scapula at end range"},
+            {n:"Dead bug",s:2,r:"8 each",l:"Bodyweight",rest:"30s",note:"Lower back stays flat"},
+          ]},
+          {id:"tu-run",time:"Lunch",label:"Zone 2 run",dur:"35–40 min",warmup:"run",
+            threshold:{title:"Metronome: 163 BPM — first 20 min",desc:"Conversational pace only. Full sentences. No strides yet — begin Week 3."}}
+        ]},
+        Wed:{type:"train", sessions:[
+          {id:"we-lift",time:"AM",label:"Posterior chain",dur:"30 min",warmup:"lower_post",exercises:[
+            {n:"Barbell RDL",s:3,r:"10",l:"Moderate",rest:"60s",note:"3 sec descent"},
+            {n:"Hip thrust — dumbbell on bench",s:3,r:"12",l:"Moderate",rest:"60s",note:"Squeeze 2 sec at top"},
+            {n:"Single leg RDL — dumbbell",s:2,r:"8 each",l:"Light–moderate",rest:"45s",note:"Controlled, no rush"},
+            {n:"Band clamshell",s:2,r:"15 each",l:"Band tension",rest:"30s",note:"Slow, full range"},
+          ]},
+          {id:"we-run",time:"Lunch",label:"Threshold — endurance",dur:"30–35 min",warmup:"run",
+            threshold:{title:"3 × 5 min at threshold / 2 min easy jog recovery",desc:"8 min easy warm-up → 3 intervals → 5 min cooldown. Total threshold: 15 min. No metronome — natural cadence only. Note Garmin spm."}}
+        ]},
+        Thu:{type:"rest"},
+        Fri:{type:"train", sessions:[
+          {id:"fr-lift",time:"AM",label:"Squat + push/pull",dur:"30 min",warmup:"lower_squat",plyo:PLYO_B1_FRI,exercises:[
+            {n:"Goblet squat — dumbbell",s:3,r:"12",l:"Moderate",rest:"60s",note:"3 sec descent"},
+            {n:"Single arm row — bench",s:3,r:"10 each",l:"Moderate",rest:"45s",note:"Controlled pull, full ROM"},
+            {n:"Push-up",s:3,r:"10",l:"Bodyweight",rest:"45s",note:"2 sec descent"},
+            {n:"Dead bug",s:2,r:"8 each",l:"Bodyweight",rest:"30s",note:"Slow, lower back stays flat"},
+          ]},
+          {id:"fr-run",time:"Lunch",label:"Threshold — sharpness",dur:"30–35 min",warmup:"run",
+            threshold:{title:"5 × 3 min at threshold / 90 sec easy jog recovery",desc:"8 min easy warm-up → 5 intervals → 5 min cooldown. Total threshold: 15 min. No metronome — natural cadence only. Note Garmin spm."}}
+        ]},
+        Sat:{type:"train", sessions:[
+          {id:"sa-run",time:"Lunch",label:"Long Zone 2 run",dur:"55–60 min",warmup:"run",
+            threshold:{title:"Easy throughout — conversational pace only",desc:"Fuel at 45 min: 15–20g fast carbs. Metronome: 163 BPM for middle 20 min. Note Garmin cadence after run."}}
+        ]},
+        Sun:{type:"train", sessions:[
+          {id:"su-run",time:"AM",label:"Hills or strides",dur:"30–35 min",warmup:"run",
+            threshold:{title:"10 min warm-up → 6–8 × 20 sec efforts → 10 min cooldown",desc:"Full walk recovery between efforts. 80% max effort. No metronome — natural cadence. Note Garmin spm."}}
+        ]}
+      }},
+      {id:2,name:"Week 2",sub:"Re-Entry continued",days:{
+        Mon:{type:"rest"},
+        Tue:{type:"train",sessions:[
+          {id:"w2-tu-lift",time:"AM",label:"Upper body + core",dur:"30 min",warmup:"upper",plyo:PLYO_B1_TUE,exercises:[
+            {n:"Pull-up or band-assisted",s:3,r:"6-8",l:"BW / band",rest:"90s",note:"Full hang at bottom"},
+            {n:"Single arm DB row",s:3,r:"10 each",l:"Moderate",rest:"45s",note:"Controlled pull, full ROM"},
+            {n:"Push-up",s:3,r:"10",l:"Bodyweight",rest:"45s",note:"2 sec descent"},
+            {n:"Band face pull",s:2,r:"15",l:"Light band",rest:"30s",note:"Retract scapula at end range"},
+            {n:"Dead bug",s:2,r:"8 each",l:"Bodyweight",rest:"30s",note:"Lower back stays flat"},
+          ]},
+          {id:"w2-tu-run",time:"Lunch",label:"Zone 2 run",dur:"35-40 min",warmup:"run",threshold:{title:"Metronome: 163 BPM first 20 min",desc:"Conversational pace. Full sentences only. No strides yet."}}
+        ]},
+        Wed:{type:"train",sessions:[
+          {id:"w2-we-lift",time:"AM",label:"Posterior chain",dur:"30 min",warmup:"lower_post",exercises:[
+            {n:"Barbell RDL",s:4,r:"10",l:"Moderate - add weight if Wk 1 felt easy",rest:"60s",note:"3 sec descent"},
+            {n:"Hip thrust - dumbbell on bench",s:4,r:"12",l:"Moderate-heavy",rest:"60s",note:"Squeeze 2 sec at top"},
+            {n:"Single leg RDL - dumbbell",s:2,r:"8 each",l:"Light-moderate",rest:"45s",note:"Controlled, no rush"},
+            {n:"Band clamshell",s:2,r:"15 each",l:"Band tension",rest:"30s",note:"Slow, full range"},
+          ]},
+          {id:"w2-we-run",time:"Lunch",label:"Threshold - endurance",dur:"30-35 min",warmup:"run",threshold:{title:"3 x 5 min at threshold / 2 min easy jog recovery",desc:"8 min easy warm-up, 3 intervals, 5 min cooldown. Total threshold: 15 min. No metronome — natural cadence. Note Garmin spm."}}
+        ]},
+        Thu:{type:"rest"},
+        Fri:{type:"train",sessions:[
+          {id:"w2-fr-lift",time:"AM",label:"Squat + push/pull",dur:"30 min",warmup:"lower_squat",plyo:PLYO_B1_FRI,exercises:[
+            {n:"Goblet squat - dumbbell",s:3,r:"12",l:"Moderate",rest:"60s",note:"3 sec descent"},
+            {n:"Single arm row - bench",s:3,r:"10 each",l:"Moderate",rest:"45s",note:"Controlled pull, full ROM"},
+            {n:"Push-up",s:3,r:"10",l:"Bodyweight",rest:"45s",note:"2 sec descent"},
+            {n:"Dead bug",s:2,r:"8 each",l:"Bodyweight",rest:"30s",note:"Slow, lower back stays flat"},
+          ]},
+          {id:"w2-fr-run",time:"Lunch",label:"Threshold - sharpness",dur:"30-35 min",warmup:"run",threshold:{title:"5 x 3 min at threshold / 90 sec easy jog recovery",desc:"8 min easy warm-up, 5 intervals, 5 min cooldown. Total threshold: 15 min. No metronome — natural cadence. Note Garmin spm."}}
+        ]},
+        Sat:{type:"train",sessions:[
+          {id:"w2-sa-run",time:"Lunch",label:"Long Zone 2 run",dur:"60-65 min",warmup:"run",threshold:{title:"Easy throughout. 5 min longer than Week 1",desc:"Fuel at 45 min: 15-20g fast carbs. Metronome: 163 BPM for middle 20 min. Note Garmin cadence after run."}}
+        ]},
+        Sun:{type:"train",sessions:[
+          {id:"w2-su-run",time:"AM",label:"Hills or strides",dur:"30-35 min",warmup:"run",threshold:{title:"10 min warm-up, 6-8 x 20 sec efforts, 10 min cooldown",desc:"Full walk recovery between efforts. 80% max effort. No metronome — natural cadence. Note Garmin spm."}}
+        ]}
+      }},
+      {id:"2b",name:"Week 2b",sub:"Re-Entry repeat — consolidate tissue readiness",days:{
+        Mon:{type:"rest"},
+        Tue:{type:"train",sessions:[
+          {id:"w2b-tu-lift",time:"AM",label:"Upper body + core",dur:"30 min",warmup:"upper",plyo:PLYO_B1_TUE,exercises:[
+            {n:"Pull-up or band-assisted",s:3,r:"6-8",l:"BW / band — match Week 2 load",rest:"90s",note:"Same as Week 2. Aim for cleaner reps."},
+            {n:"Single arm DB row",s:3,r:"10 each",l:"Moderate",rest:"45s",note:"Controlled pull, full ROM"},
+            {n:"Push-up",s:3,r:"10",l:"Bodyweight",rest:"45s",note:"2 sec descent"},
+            {n:"Band face pull",s:2,r:"15",l:"Light band",rest:"30s",note:"Retract scapula at end range"},
+            {n:"Dead bug",s:2,r:"8 each",l:"Bodyweight",rest:"30s",note:"Lower back stays flat"},
+          ]},
+          {id:"w2b-tu-run",time:"Lunch",label:"Zone 2 run",dur:"35-40 min",warmup:"run",threshold:{title:"Metronome: 163 BPM first 20 min",desc:"Conversational pace. Full sentences only. Note if cadence feels more natural than Week 2."}}
+        ]},
+        Wed:{type:"train",sessions:[
+          {id:"w2b-we-lift",time:"AM",label:"Posterior chain",dur:"30 min",warmup:"lower_post",exercises:[
+            {n:"Barbell RDL",s:4,r:"10",l:"Match Week 2 load",rest:"60s",note:"3 sec descent — groove the pattern"},
+            {n:"Hip thrust - dumbbell on bench",s:4,r:"12",l:"Moderate-heavy",rest:"60s",note:"Squeeze 2 sec at top"},
+            {n:"Single leg RDL - dumbbell",s:2,r:"8 each",l:"Light-moderate",rest:"45s",note:"Controlled, no rush"},
+            {n:"Band clamshell",s:2,r:"15 each",l:"Band tension",rest:"30s",note:"Slow, full range"},
+          ]},
+          {id:"w2b-we-run",time:"Lunch",label:"Threshold - endurance",dur:"30-35 min",warmup:"run",threshold:{title:"3 x 5 min at threshold / 2 min easy jog recovery",desc:"8 min easy warm-up, 3 intervals, 5 min cooldown. Total threshold: 15 min. No metronome — natural cadence. Note Garmin spm."}}
+        ]},
+        Thu:{type:"rest"},
+        Fri:{type:"train",sessions:[
+          {id:"w2b-fr-lift",time:"AM",label:"Squat + push/pull",dur:"30 min",warmup:"lower_squat",plyo:PLYO_B1_FRI,exercises:[
+            {n:"Goblet squat - dumbbell",s:3,r:"12",l:"Moderate",rest:"60s",note:"3 sec descent"},
+            {n:"Single arm row - bench",s:3,r:"10 each",l:"Moderate",rest:"45s",note:"Controlled pull, full ROM"},
+            {n:"Push-up",s:3,r:"10",l:"Bodyweight",rest:"45s",note:"2 sec descent"},
+            {n:"Dead bug",s:2,r:"8 each",l:"Bodyweight",rest:"30s",note:"Slow, lower back stays flat"},
+          ]},
+          {id:"w2b-fr-run",time:"Lunch",label:"Threshold - sharpness",dur:"30-35 min",warmup:"run",threshold:{title:"5 x 3 min at threshold / 90 sec easy jog recovery",desc:"8 min easy warm-up, 5 intervals, 5 min cooldown. Total threshold: 15 min. No metronome — natural cadence. Note Garmin spm."}}
+        ]},
+        Sat:{type:"train",sessions:[
+          {id:"w2b-sa-run",time:"Lunch",label:"Long Zone 2 run",dur:"60-65 min",warmup:"run",threshold:{title:"Easy throughout. Match Week 2 duration",desc:"Fuel at 45 min: 15-20g fast carbs. Metronome: 163 BPM for middle 20 min. Note Garmin cadence — compare to Week 2."}}
+        ]},
+        Sun:{type:"train",sessions:[
+          {id:"w2b-su-run",time:"AM",label:"Hills or strides",dur:"30-35 min",warmup:"run",threshold:{title:"10 min warm-up, 6-8 x 20 sec efforts, 10 min cooldown",desc:"Full walk recovery between efforts. 80% max effort. No metronome — natural cadence. Note Garmin spm."}}
+        ]}
+      }},
+      {id:3,name:"Week 3",sub:"Volume Nudge + Strides begin",days:{
+        Mon:{type:"rest"},
+        Tue:{type:"train",sessions:[
+          {id:"w3-tu-lift",time:"AM",label:"Upper body + core",dur:"30-35 min",warmup:"upper",plyo:PLYO_B1_TUE,exercises:[
+            {n:"Pull-up or band-assisted",s:3,r:"8",l:"BW / band",rest:"90s",note:"Full hang, assist only if needed"},
+            {n:"Single arm DB row",s:3,r:"10 each",l:"Moderate",rest:"45s",note:"Controlled pull, full ROM"},
+            {n:"Push-up - standard or weighted",s:3,r:"12",l:"BW / light plate",rest:"45s",note:"2 sec descent"},
+            {n:"Band face pull",s:3,r:"15",l:"Light-moderate band",rest:"30s",note:"Hold end range 1 sec"},
+            {n:"Dead bug",s:2,r:"8 each",l:"Bodyweight",rest:"30s",note:"Slow and controlled"},
+          ]},
+          {id:"w3-tu-run",time:"Lunch",label:"Zone 2 run + strides",dur:"40-45 min + strides",warmup:"run",threshold:{title:"Metronome: 163 BPM first 20 min. Strides begin: 4 x 20 sec / 75 sec walk after run",desc:"Strides: controlled fast, foot under hips, quick turnover. 2 min walk after run then strides."}}
+        ]},
+        Wed:{type:"train",sessions:[
+          {id:"w3-we-lift",time:"AM",label:"Posterior chain",dur:"30-35 min",warmup:"lower_post",exercises:[
+            {n:"Barbell RDL",s:4,r:"10",l:"Moderate - add weight if last set had 3+ RIR",rest:"60s",note:"3 sec descent"},
+            {n:"Hip thrust - dumbbell on bench",s:4,r:"12",l:"Moderate-heavy",rest:"60s",note:"Squeeze 2 sec at top"},
+            {n:"Single leg RDL - dumbbell",s:3,r:"8 each",l:"Light-moderate",rest:"45s",note:"Controlled"},
+            {n:"Band clamshell",s:2,r:"15 each",l:"Band tension",rest:"30s",note:"Slow"},
+          ]},
+          {id:"w3-we-run",time:"Lunch",label:"Threshold - endurance",dur:"35-40 min",warmup:"run",threshold:{title:"4 x 5 min at threshold / 90 sec easy jog recovery",desc:"8 min easy warm-up, 4 intervals, 5 min cooldown. Total threshold: 20 min. No metronome — natural cadence. Note Garmin spm."}}
+        ]},
+        Thu:{type:"rest"},
+        Fri:{type:"train",sessions:[
+          {id:"w3-fr-lift",time:"AM",label:"Squat + push/pull",dur:"30-35 min",warmup:"lower_squat",plyo:PLYO_B1_FRI,exercises:[
+            {n:"Goblet squat - dumbbell",s:3,r:"12",l:"Moderate",rest:"60s",note:"3 sec descent"},
+            {n:"Single arm row - bench",s:3,r:"10 each",l:"Moderate",rest:"45s",note:"Controlled pull"},
+            {n:"Push-up",s:3,r:"12",l:"BW / weighted",rest:"45s",note:"2 sec descent"},
+            {n:"Dead bug",s:3,r:"8 each",l:"Bodyweight",rest:"30s",note:"Controlled"},
+          ]},
+          {id:"w3-fr-run",time:"Lunch",label:"Threshold - sharpness",dur:"35-40 min",warmup:"run",threshold:{title:"6 x 3 min at threshold / 90 sec easy jog recovery",desc:"8 min easy warm-up, 6 intervals, 5 min cooldown. Total threshold: 18 min. No metronome — natural cadence. Note Garmin spm."}}
+        ]},
+        Sat:{type:"train",sessions:[
+          {id:"w3-sa-run",time:"Lunch",label:"Long Zone 2 run",dur:"65-75 min",warmup:"run",threshold:{title:"Easy throughout. Cadence check + metronome",desc:"Fuel at 45 min: 15-20g fast carbs. Metronome: 163 BPM for middle 20 min. Note average spm before and after metronome section."}}
+        ]},
+        Sun:{type:"train",sessions:[
+          {id:"w3-su-run",time:"AM",label:"Hills or strides",dur:"35-40 min",warmup:"run",threshold:{title:"10 min warm-up, 8-10 x 20 sec efforts, 10 min cooldown",desc:"2 more efforts than Weeks 1-2. Full walk recovery between each. No metronome — natural cadence. Note Garmin spm."}}
+        ]}
+      }},
+      {id:4,name:"Week 4",sub:"Mandatory Deload",days:{
+        Mon:{type:"rest"},
+        Tue:{type:"train",sessions:[
+          {id:"w4-tu-lift",time:"AM",label:"Upper body + core - deload",dur:"20 min",warmup:"upper",exercises:[
+            {n:"Pull-up or band-assisted",s:2,r:"5",l:"Reduce load 20%",rest:"90s",note:"Deload - reduce sets and load"},
+            {n:"Single arm DB row",s:2,r:"8 each",l:"Light",rest:"45s",note:"Easy, not challenging"},
+            {n:"Push-up",s:2,r:"8",l:"Bodyweight",rest:"45s",note:"No added weight"},
+            {n:"Dead bug",s:2,r:"6 each",l:"Bodyweight",rest:"30s",note:"Slow and easy"},
+          ]},
+          {id:"w4-tu-run",time:"Lunch",label:"Easy Zone 2 - deload",dur:"25-30 min",warmup:"run",threshold:{title:"Metronome 163 BPM if HRV allows. No strides this week",desc:"Very easy. No agenda. This week is consolidation not fitness."}}
+        ]},
+        Wed:{type:"train",sessions:[
+          {id:"w4-we-lift",time:"AM",label:"Posterior chain - deload",dur:"20 min",warmup:"lower_post",exercises:[
+            {n:"Barbell RDL",s:2,r:"8",l:"Reduce load 20%",rest:"60s",note:"Deload - easy"},
+            {n:"Hip thrust - dumbbell",s:2,r:"10",l:"Light",rest:"60s",note:"No grinding"},
+            {n:"Band clamshell",s:2,r:"12 each",l:"Light band",rest:"30s",note:"Gentle"},
+          ]},
+          {id:"w4-we-run",time:"Lunch",label:"Easy Zone 2 only",dur:"25 min",warmup:"run",threshold:{title:"Zone 2 only - no threshold work this week",desc:"Easy pace throughout. Let body absorb Weeks 1-3. No metronome — natural cadence. Note Garmin spm."}}
+        ]},
+        Thu:{type:"rest"},
+        Fri:{type:"train",sessions:[
+          {id:"w4-fr-lift",time:"AM",label:"Squat + push/pull - deload",dur:"20 min",warmup:"lower_squat",exercises:[
+            {n:"Goblet squat - dumbbell",s:2,r:"8",l:"Light",rest:"60s",note:"Deload"},
+            {n:"Single arm row",s:2,r:"8 each",l:"Light",rest:"45s",note:"Easy"},
+            {n:"Push-up",s:2,r:"8",l:"Bodyweight",rest:"45s",note:"No weight added"},
+            {n:"Dead bug",s:2,r:"6 each",l:"Bodyweight",rest:"30s",note:"Gentle"},
+          ]},
+          {id:"w4-fr-run",time:"Lunch",label:"Easy Zone 2 only",dur:"25 min",warmup:"run",threshold:{title:"Zone 2 only - no threshold work this week",desc:"Keep it genuinely easy. Sleep is the primary training tool this week. No metronome — natural cadence. Note Garmin spm."}}
+        ]},
+        Sat:{type:"train",sessions:[
+          {id:"w4-sa-run",time:"Lunch",label:"Long Zone 2 - deload",dur:"40-45 min",warmup:"run",threshold:{title:"Easy pace - shorter than Week 3",desc:"Metronome: 163 BPM for middle 20 min. Deload effort — no fueling needed."}}
+        ]},
+        Sun:{type:"train",sessions:[
+          {id:"w4-su-run",time:"AM",label:"Easy jog - deload",dur:"25 min",warmup:"run",threshold:{title:"Easy recovery jog only - no hills no sprints",desc:"Recovery pace throughout. No metronome. Note Garmin spm if you run."}}
+        ]}
+      }},
+    ]},
+    {id:2, name:"Block 2", sub:"Hypertrophy + Aerobic Volume Build", weeks:[
+      {id:5,name:"Week 5",sub:"Hypertrophy Foundation",days:{
+        Mon:{type:"rest"},
+        Tue:{type:"train",sessions:[
+          {id:"w5-tu-lift",time:"AM",label:"Upper body + core - hypertrophy",dur:"35 min",warmup:"upper",plyo:PLYO_B1_TUE,exercises:[
+            {n:"Pull-up or weighted pull-up",s:3,r:"6-8",l:"BW first - add load if 3x8 easy",rest:"90s",note:"Full hang at bottom"},
+            {n:"Single arm DB row",s:4,r:"10 each",l:"Moderate-heavy",rest:"60s",note:"Controlled, heavy"},
+            {n:"DB floor press",s:3,r:"10-12",l:"Moderate",rest:"60s",note:"2 sec descent, full lockout"},
+            {n:"Band face pull",s:3,r:"15",l:"Moderate band",rest:"30s",note:"Hold end range"},
+            {n:"Hollow body hold or dead bug",s:3,r:"20 sec / 8 each",l:"Bodyweight",rest:"30s",note:"Full tension"},
+          ]},
+          {id:"w5-tu-run",time:"Lunch",label:"Zone 2 run + strides",dur:"45 min + strides",warmup:"run",threshold:{title:"Metronome: 165 BPM first 20 min. Strides: 5 x 22 sec / 60 sec walk after run",desc:"BPM increases to 165. Strides lengthen to 22 sec. 2 min walk after run then strides."}}
+        ]},
+        Wed:{type:"train",sessions:[
+          {id:"w5-we-lift",time:"AM",label:"Posterior chain - barbell hypertrophy",dur:"35-40 min",warmup:"lower_post",exercises:[
+            {n:"Barbell RDL",s:4,r:"8-10",l:"Moderate-heavy",rest:"90s",note:"3 sec descent - heavier than Block 1"},
+            {n:"Barbell hip thrust",s:4,r:"10-12",l:"Moderate",rest:"90s",note:"Squeeze 2 sec at top"},
+            {n:"Bulgarian split squat - dumbbells",s:3,r:"10 each",l:"Moderate",rest:"60s",note:"Full ROM, upright torso"},
+            {n:"Single arm DB row",s:3,r:"10 each",l:"Moderate-heavy",rest:"60s",note:"Controlled pull"},
+            {n:"Band face pull",s:2,r:"15",l:"Light-moderate",rest:"30s",note:"Hold tension at end range"},
+          ]},
+          {id:"w5-we-run",time:"Lunch",label:"Threshold - endurance",dur:"40-42 min",warmup:"run",threshold:{title:"4 x 6 min at threshold / 90 sec easy jog recovery",desc:"8 min easy warm-up, 4 intervals, 5 min cooldown. Total threshold: 24 min. Metronome: TBD BPM (set after Week 4 cadence review) — warm-up and recovery jogs only. Note Garmin spm."}}
+        ]},
+        Thu:{type:"rest"},
+        Fri:{type:"train",sessions:[
+          {id:"w5-fr-lift",time:"AM",label:"Squat + push/pull - barbell",dur:"35-40 min",warmup:"lower_squat",plyo:PLYO_B1_FRI,exercises:[
+            {n:"Barbell back squat or goblet squat",s:4,r:"8-10",l:"Moderate",rest:"90s",note:"3 sec descent"},
+            {n:"DB floor press or weighted push-up",s:3,r:"10-12",l:"Moderate",rest:"60s",note:"2 sec descent"},
+            {n:"Pull-up or band-assisted",s:3,r:"6-8",l:"Bodyweight first",rest:"90s",note:"Full hang at bottom"},
+            {n:"Single leg RDL - barbell",s:3,r:"8 each",l:"Light-moderate",rest:"60s",note:"Controlled balance"},
+            {n:"Dead bug with DB pullover",s:2,r:"8 each",l:"Light",rest:"30s",note:"Lower back flat"},
+          ]},
+          {id:"w5-fr-run",time:"Lunch",label:"Threshold - sharpness",dur:"40-42 min",warmup:"run",threshold:{title:"6 x 4 min at threshold / 90 sec easy jog recovery",desc:"8 min easy warm-up, 6 intervals, 5 min cooldown. Total threshold: 24 min. No metronome — natural cadence baseline. Note Garmin spm."}}
+        ]},
+        Sat:{type:"train",sessions:[
+          {id:"w5-sa-run",time:"Lunch",label:"Long Zone 2 run",dur:"75-80 min",warmup:"run",threshold:{title:"Easy throughout. Fuel at 45 min: 20-25g fast carbs",desc:"Metronome: 165 BPM for middle 20 min every Saturday. Note cadence before and after metronome section."}}
+        ]},
+        Sun:{type:"train",sessions:[
+          {id:"w5-su-run",time:"AM",label:"Hills or track sprints",dur:"35-40 min",warmup:"run",threshold:{title:"10 min warm-up, 8-10 efforts, 10 min cooldown",desc:"Metronome: TBD BPM (set after Week 4 cadence review) — warm-up 10 min only. Turn off for efforts. Full recovery between efforts."}}
+        ]}
+      }},
+      {id:6,name:"Week 6",sub:"Hypertrophy Foundation",days:{
+        Mon:{type:"rest"},
+        Tue:{type:"train",sessions:[
+          {id:"w6-tu-lift",time:"AM",label:"Upper body + core",dur:"35 min",warmup:"upper",plyo:PLYO_B1_TUE,exercises:[
+            {n:"Pull-up or weighted pull-up",s:3,r:"6-8",l:"Add load if 3x8 felt easy Wk 5",rest:"90s",note:"Full hang at bottom"},
+            {n:"Single arm DB row",s:4,r:"10 each",l:"Moderate-heavy",rest:"60s",note:"Heavier than Week 5 if earned"},
+            {n:"DB floor press",s:3,r:"10-12",l:"Moderate",rest:"60s",note:"2 sec descent"},
+            {n:"Band face pull",s:3,r:"15",l:"Moderate band",rest:"30s",note:"Hold end range"},
+            {n:"Hollow body hold or dead bug",s:3,r:"20 sec / 8 each",l:"Bodyweight",rest:"30s",note:"Full tension"},
+          ]},
+          {id:"w6-tu-run",time:"Lunch",label:"Zone 2 run + strides",dur:"45 min + strides",warmup:"run",threshold:{title:"Metronome: 165 BPM first 20 min. Strides: 5 x 22 sec / 60 sec walk",desc:"Same as Week 5 - consistent repetition builds the pattern."}}
+        ]},
+        Wed:{type:"train",sessions:[
+          {id:"w6-we-lift",time:"AM",label:"Posterior chain",dur:"35-40 min",warmup:"lower_post",exercises:[
+            {n:"Barbell RDL",s:4,r:"8-10",l:"Same or slightly heavier than Wk 5",rest:"90s",note:"3 sec descent - add weight only if last set had 3+ RIR"},
+            {n:"Barbell hip thrust",s:4,r:"10-12",l:"Moderate-heavy",rest:"90s",note:"Squeeze 2 sec at top"},
+            {n:"Bulgarian split squat - dumbbells",s:3,r:"10 each",l:"Moderate",rest:"60s",note:"Full ROM"},
+            {n:"Single arm DB row",s:3,r:"10 each",l:"Moderate-heavy",rest:"60s",note:"Controlled"},
+            {n:"Band face pull",s:2,r:"15",l:"Light-moderate",rest:"30s",note:"Hold tension"},
+          ]},
+          {id:"w6-we-run",time:"Lunch",label:"Threshold - endurance",dur:"40-42 min",warmup:"run",threshold:{title:"4 x 6 min at threshold / 90 sec easy jog recovery",desc:"8 min easy warm-up, 4 intervals, 5 min cooldown. Total threshold: 24 min. Metronome: TBD BPM — warm-up and recovery jogs only. Note Garmin spm."}}
+        ]},
+        Thu:{type:"rest"},
+        Fri:{type:"train",sessions:[
+          {id:"w6-fr-lift",time:"AM",label:"Squat + push/pull",dur:"35-40 min",warmup:"lower_squat",plyo:PLYO_B1_FRI,exercises:[
+            {n:"Barbell back squat",s:4,r:"8-10",l:"Moderate - add weight if Wk 5 had 3+ RIR",rest:"90s",note:"3 sec descent"},
+            {n:"DB floor press or weighted push-up",s:3,r:"10-12",l:"Moderate",rest:"60s",note:"2 sec descent"},
+            {n:"Pull-up or band-assisted",s:3,r:"6-8",l:"BW / add load if ready",rest:"90s",note:"Full ROM"},
+            {n:"Single leg RDL - barbell",s:3,r:"8 each",l:"Light-moderate",rest:"60s",note:"Controlled"},
+            {n:"Dead bug with DB pullover",s:2,r:"8 each",l:"Light",rest:"30s",note:"Lower back flat"},
+          ]},
+          {id:"w6-fr-run",time:"Lunch",label:"Threshold - sharpness",dur:"40-42 min",warmup:"run",threshold:{title:"6 x 4 min at threshold / 90 sec easy jog recovery",desc:"8 min easy warm-up, 6 intervals, 5 min cooldown. Total threshold: 24 min. No metronome — natural cadence baseline. Note Garmin spm."}}
+        ]},
+        Sat:{type:"train",sessions:[
+          {id:"w6-sa-run",time:"Lunch",label:"Long Zone 2 run",dur:"75-80 min",warmup:"run",threshold:{title:"Easy throughout. Fuel at 45 min: 20-25g fast carbs",desc:"Metronome: 165 BPM for middle 20 min. Note cadence."}}
+        ]},
+        Sun:{type:"train",sessions:[
+          {id:"w6-su-run",time:"AM",label:"Hills or track sprints",dur:"35-40 min",warmup:"run",threshold:{title:"10 min warm-up, 8-10 efforts, 10 min cooldown",desc:"Metronome: TBD BPM — warm-up 10 min only. Turn off for efforts. Full recovery between efforts."}}
+        ]}
+      }},
+      {id:7,name:"Week 7",sub:"Progressive Overload",days:{
+        Mon:{type:"rest"},
+        Tue:{type:"train",sessions:[
+          {id:"w7-tu-lift",time:"AM",label:"Upper body + core - overload",dur:"35-40 min",warmup:"upper",plyo:PLYO_B1_TUE,exercises:[
+            {n:"Weighted pull-up or pull-up cluster",s:4,r:"6-8",l:"Add DB or plate if earned",rest:"90s",note:"Full hang, add load if 3 sets of 8 is easy"},
+            {n:"Single arm DB row",s:4,r:"10 each",l:"Heavy and controlled",rest:"60s",note:"Heavier than Weeks 5-6"},
+            {n:"DB floor press",s:3,r:"10-12",l:"Moderate-heavy",rest:"60s",note:"2 sec descent"},
+            {n:"Barbell or DB overhead press",s:3,r:"8-10",l:"Light-moderate",rest:"60s",note:"Controlled press, no arch"},
+            {n:"Band face pull",s:3,r:"15",l:"Moderate band",rest:"30s",note:"Hold end range 2 sec"},
+            {n:"Hollow body hold",s:3,r:"25 sec",l:"Bodyweight",rest:"30s",note:"Full tension"},
+          ]},
+          {id:"w7-tu-run",time:"Lunch",label:"Zone 2 run + strides",dur:"50 min + strides",warmup:"run",threshold:{title:"Metronome: 165 BPM first 20 min. Strides: 5 x 22 sec / 60 sec walk",desc:"Run extends to 50 min. Same cadence target and stride count."}}
+        ]},
+        Wed:{type:"train",sessions:[
+          {id:"w7-we-lift",time:"AM",label:"Posterior chain - overload",dur:"35-40 min",warmup:"lower_post",exercises:[
+            {n:"Barbell RDL",s:4,r:"8-10",l:"Heavier than Weeks 5-6 if earned",rest:"90s",note:"3 sec descent"},
+            {n:"Barbell hip thrust",s:4,r:"10-12",l:"Heavier if earned",rest:"90s",note:"Squeeze 2 sec"},
+            {n:"Bulgarian split squat - dumbbells",s:3,r:"10-12",l:"Moderate-heavy",rest:"60s",note:"Increase ROM"},
+            {n:"Single arm row",s:4,r:"10 each",l:"Moderate-heavy",rest:"60s",note:"Add one set vs Weeks 5-6"},
+            {n:"Farmer carry - dumbbells",s:2,r:"30 sec walk",l:"Heavy and controlled",rest:"60s",note:"New addition - grip and core"},
+            {n:"Band face pull",s:2,r:"15",l:"Light-moderate",rest:"30s",note:"Hold tension"},
+          ]},
+          {id:"w7-we-run",time:"Lunch",label:"Threshold - endurance",dur:"42-45 min",warmup:"run",threshold:{title:"4 x 6 min at threshold / 90 sec easy jog recovery",desc:"If felt controlled in Week 6, progress to 4 x 7 min next week. Metronome: TBD BPM — warm-up and recovery jogs only. Note Garmin spm."}}
+        ]},
+        Thu:{type:"rest"},
+        Fri:{type:"train",sessions:[
+          {id:"w7-fr-lift",time:"AM",label:"Squat + push/pull - overload",dur:"35-40 min",warmup:"lower_squat",plyo:PLYO_B1_FRI,exercises:[
+            {n:"Barbell back squat",s:4,r:"8-10",l:"Moderate-heavy",rest:"90s",note:"3 sec descent"},
+            {n:"DB floor press or weighted push-up",s:3,r:"10-12",l:"Moderate-heavy",rest:"60s",note:"2 sec descent"},
+            {n:"Pull-up",s:3,r:"6-8",l:"Add load if 3x8 is easy",rest:"90s",note:"Full ROM"},
+            {n:"Single leg RDL - barbell",s:3,r:"8 each",l:"Moderate",rest:"60s",note:"Controlled"},
+            {n:"Dead bug with DB pullover",s:2,r:"8 each",l:"Light",rest:"30s",note:"Slow"},
+          ]},
+          {id:"w7-fr-run",time:"Lunch",label:"Threshold - sharpness",dur:"42-45 min",warmup:"run",threshold:{title:"6 x 4 min at threshold / 75 sec easy jog recovery",desc:"8 min easy warm-up, 6 intervals, 5 min cooldown. Rest shortens to 75 sec. No metronome — natural cadence baseline. Note Garmin spm."}}
+        ]},
+        Sat:{type:"train",sessions:[
+          {id:"w7-sa-run",time:"Lunch",label:"Long Zone 2 run",dur:"85-90 min",warmup:"run",threshold:{title:"Easy throughout. Fuel at 45 min and 75 min marks",desc:"Metronome: 165 BPM for middle 20 min. Note cadence."}}
+        ]},
+        Sun:{type:"train",sessions:[
+          {id:"w7-su-run",time:"AM",label:"Hills - Week 7",dur:"40 min",warmup:"run",threshold:{title:"10 min warm-up, hill repeats, 10 min cooldown",desc:"Week 7 = hills. 8-10 efforts. Metronome: TBD BPM — warm-up only. Turn off for efforts. Full recovery between each."}}
+        ]}
+      }},
+      {id:8,name:"Week 8",sub:"Deload",days:{
+        Mon:{type:"rest"},
+        Tue:{type:"train",sessions:[
+          {id:"w8-tu-lift",time:"AM",label:"Upper body + core - deload",dur:"25 min",warmup:"upper",exercises:[
+            {n:"Pull-up or band-assisted",s:2,r:"5",l:"Reduce load 20%",rest:"90s",note:"Deload week"},
+            {n:"Single arm DB row",s:2,r:"8 each",l:"Light",rest:"45s",note:"Easy"},
+            {n:"DB floor press",s:2,r:"8",l:"Light",rest:"60s",note:"Deload"},
+            {n:"Dead bug",s:2,r:"6 each",l:"Bodyweight",rest:"30s",note:"Gentle"},
+          ]},
+          {id:"w8-tu-run",time:"Lunch",label:"Easy Zone 2 - deload",dur:"35 min",warmup:"run",threshold:{title:"Metronome 165 BPM first 20 min. No strides this week",desc:"Drop run duration by 30%. Very easy pace."}}
+        ]},
+        Wed:{type:"train",sessions:[
+          {id:"w8-we-lift",time:"AM",label:"Posterior chain - deload",dur:"25 min",warmup:"lower_post",exercises:[
+            {n:"Barbell RDL",s:2,r:"8",l:"Reduce load 20%",rest:"60s",note:"Deload - easy"},
+            {n:"Barbell hip thrust",s:2,r:"10",l:"Light",rest:"60s",note:"No grinding"},
+            {n:"Band clamshell",s:2,r:"12 each",l:"Light band",rest:"30s",note:"Gentle"},
+          ]},
+          {id:"w8-we-run",time:"Lunch",label:"Zone 2 only - no threshold",dur:"30 min",warmup:"run",threshold:{title:"Zone 2 only - no threshold work this week",desc:"Easy pace. Consolidate Weeks 5-7 adaptations. Metronome: TBD BPM first 20 min. Note Garmin spm."}}
+        ]},
+        Thu:{type:"rest"},
+        Fri:{type:"train",sessions:[
+          {id:"w8-fr-lift",time:"AM",label:"Squat + push/pull - deload",dur:"25 min",warmup:"lower_squat",exercises:[
+            {n:"Barbell back squat",s:2,r:"6",l:"Reduce load 20%",rest:"90s",note:"Deload"},
+            {n:"DB floor press",s:2,r:"8",l:"Light",rest:"60s",note:"Easy"},
+            {n:"Pull-up",s:2,r:"4",l:"Bodyweight",rest:"90s",note:"No added load"},
+            {n:"Dead bug",s:2,r:"6 each",l:"Bodyweight",rest:"30s",note:"Gentle"},
+          ]},
+          {id:"w8-fr-run",time:"Lunch",label:"Zone 2 only - no threshold",dur:"30 min",warmup:"run",threshold:{title:"Zone 2 only - no threshold work this week",desc:"Easy and short. Deload. No metronome — natural cadence. Note Garmin spm."}}
+        ]},
+        Sat:{type:"train",sessions:[
+          {id:"w8-sa-run",time:"Lunch",label:"Long Zone 2 - deload",dur:"55-60 min",warmup:"run",threshold:{title:"Easy pace - shorter than Week 7",desc:"Metronome: 165 BPM for middle 20 min. Deload — drop long run by 30%."}}
+        ]},
+        Sun:{type:"train",sessions:[
+          {id:"w8-su-run",time:"AM",label:"Easy jog - deload",dur:"25-30 min",warmup:"run",threshold:{title:"Easy recovery jog - no track or hills",desc:"Active recovery only. No intensity. Metronome TBD BPM if running. Note Garmin spm."}}
+        ]}
+      }},
+    ]},
+    {id:3, name:"Travel Block", sub:"Maintenance — Jun 11–30", istravel:true, weeks:[
+      {id:"T1",name:"Travel Week 1",sub:"Jun 11–17 · Maintenance",istravel:true,days:{
+        Mon:{type:"travel_rest"},Tue:{type:"travel_train"},Wed:{type:"travel_rest"},
+        Thu:{type:"travel_train"},Fri:{type:"travel_rest"},Sat:{type:"travel_train"},Sun:{type:"travel_rest"}
+      }},
+      {id:"T2",name:"Travel Week 2",sub:"Jun 18–24 · Maintenance",istravel:true,days:{
+        Mon:{type:"travel_rest"},Tue:{type:"travel_train"},Wed:{type:"travel_rest"},
+        Thu:{type:"travel_train"},Fri:{type:"travel_rest"},Sat:{type:"travel_train"},Sun:{type:"travel_rest"}
+      }},
+      {id:"T3",name:"Travel Week 3",sub:"Jun 25–30 · Maintenance",istravel:true,days:{
+        Mon:{type:"travel_rest"},Tue:{type:"travel_train"},Wed:{type:"travel_rest"},
+        Thu:{type:"travel_train"},Fri:{type:"travel_rest"},Sat:{type:"travel_rest"},Sun:{type:"travel_rest"}
+      }},
+    ]},
+    {id:4, name:"Block 2 cont.", sub:"Hypertrophy - Resume Jul", weeks:[
+      {id:9,name:"Week 9",sub:"Strength-Endurance Bridge",days:{
+        Mon:{type:"rest"},
+        Tue:{type:"train",sessions:[
+          {id:"w9-tu-lift",time:"AM",label:"Upper body + core - strength endurance",dur:"35-40 min",warmup:"upper",plyo:PLYO_B1_TUE,exercises:[
+            {n:"Weighted pull-up",s:4,r:"5-6",l:"Moderate load added",rest:"90s",note:"Full hang, load added"},
+            {n:"Single arm DB row",s:4,r:"8 each",l:"Heavy",rest:"60s",note:"Heavy and controlled"},
+            {n:"DB floor press or push-up weighted",s:3,r:"8-10",l:"Moderate-heavy",rest:"60s",note:"2 sec descent"},
+            {n:"Barbell overhead press",s:3,r:"6-8",l:"Moderate",rest:"75s",note:"Strict press, no leg drive"},
+            {n:"Band face pull",s:3,r:"15",l:"Moderate-heavy band",rest:"30s",note:"Hold end range"},
+            {n:"Ab wheel or hollow body",s:3,r:"8 reps / 30 sec",l:"Bodyweight",rest:"30s",note:"Full extension if ab wheel"},
+          ]},
+          {id:"w9-tu-run",time:"Lunch",label:"Zone 2 run + strides",dur:"55 min + strides",warmup:"run",threshold:{title:"Metronome: 165 BPM first 20 min. Strides: 6 x 25 sec / 60 sec walk after run",desc:"Strides lengthen to 25 sec. 2 min walk after run then strides."}}
+        ]},
+        Wed:{type:"train",sessions:[
+          {id:"w9-we-lift",time:"AM",label:"Posterior chain - strength endurance",dur:"35-40 min",warmup:"lower_post",exercises:[
+            {n:"Barbell RDL",s:4,r:"6-8",l:"Heavier than Block 2 start",rest:"90s",note:"3 sec descent"},
+            {n:"Barbell hip thrust",s:4,r:"8-10",l:"Heavier",rest:"90s",note:"Squeeze 2 sec"},
+            {n:"Bulgarian split squat - barbell if form solid",s:3,r:"8 each",l:"Moderate-heavy",rest:"75s",note:"Progress to barbell if form is solid"},
+            {n:"Weighted pull-up or pull-up cluster",s:3,r:"5-6",l:"Add DB between feet or band load",rest:"90s",note:"Full hang"},
+            {n:"Single arm row",s:4,r:"8 each",l:"Heavy",rest:"60s",note:"Heavy and controlled"},
+            {n:"Farmer carry",s:3,r:"40 sec walk",l:"Heavier dumbbells",rest:"60s",note:"Heavier than Weeks 7-8"},
+          ]},
+          {id:"w9-we-run",time:"Lunch",label:"Threshold - bridge to continuous",dur:"44-47 min",warmup:"run",threshold:{title:"2 x 10 min at threshold / 2 min easy jog recovery",desc:"8 min easy warm-up, 2 long intervals, 5 min cooldown. Total threshold: 20 min. Metronome: TBD BPM — warm-up and recovery jog only. Note Garmin spm."}}
+        ]},
+        Thu:{type:"rest"},
+        Fri:{type:"train",sessions:[
+          {id:"w9-fr-lift",time:"AM",label:"Squat + push/pull - strength endurance",dur:"35-40 min",warmup:"lower_squat",plyo:PLYO_B1_FRI,exercises:[
+            {n:"Barbell back squat",s:4,r:"6-8",l:"Heavy",rest:"90s",note:"3 sec descent"},
+            {n:"DB floor press or push-up weighted",s:3,r:"8-10",l:"Moderate-heavy",rest:"60s",note:"2 sec descent"},
+            {n:"Single leg RDL - barbell",s:3,r:"8 each",l:"Moderate-heavy",rest:"60s",note:"Controlled"},
+            {n:"Barbell push press",s:3,r:"6-8",l:"Start light",rest:"75s",note:"Explosive up, controlled down - new movement"},
+            {n:"Dead bug with DB pullover",s:2,r:"8 each",l:"Light",rest:"30s",note:"Slow"},
+          ]},
+          {id:"w9-fr-run",time:"Lunch",label:"Threshold - short and sharp",dur:"44-47 min",warmup:"run",threshold:{title:"5 x 4 min at threshold / 60 sec easy jog recovery",desc:"8 min easy warm-up, 5 intervals, 5 min cooldown. Rest: 60 sec. No metronome — natural cadence baseline. Note Garmin spm."}}
+        ]},
+        Sat:{type:"train",sessions:[
+          {id:"w9-sa-run",time:"Lunch",label:"Long Zone 2 run",dur:"90-95 min",warmup:"run",threshold:{title:"Easy throughout. Fuel every 30 min beyond 45 min mark",desc:"Metronome: 165 BPM for middle 20 min. Note cadence."}}
+        ]},
+        Sun:{type:"train",sessions:[
+          {id:"w9-su-run",time:"AM",label:"Track intervals - Week 9",dur:"40-45 min",warmup:"run",threshold:{title:"10 min warm-up, 8 x 400m at hard effort, 90 sec recovery walk, 10 min cooldown",desc:"Week 9 = track. Metronome: TBD BPM — warm-up only. Turn off for 400m efforts. Full walk recovery between."}}
+        ]}
+      }},
+      {id:10,name:"Week 10",sub:"Strength-Endurance Bridge",days:{
+        Mon:{type:"rest"},
+        Tue:{type:"train",sessions:[
+          {id:"w10-tu-lift",time:"AM",label:"Upper body + core",dur:"35-40 min",warmup:"upper",plyo:PLYO_B1_TUE,exercises:[
+            {n:"Weighted pull-up",s:4,r:"5-6",l:"Same or slightly heavier than Wk 9",rest:"90s",note:"Full hang, load added"},
+            {n:"Single arm DB row",s:4,r:"8 each",l:"Heavy",rest:"60s",note:"Consistent with Week 9"},
+            {n:"DB floor press",s:3,r:"8-10",l:"Moderate-heavy",rest:"60s",note:"2 sec descent"},
+            {n:"Barbell overhead press",s:3,r:"6-8",l:"Moderate",rest:"75s",note:"Strict press"},
+            {n:"Band face pull",s:3,r:"15",l:"Moderate-heavy band",rest:"30s",note:"Hold end range"},
+            {n:"Ab wheel or hollow body",s:3,r:"8 / 30 sec",l:"Bodyweight",rest:"30s",note:"Full control"},
+          ]},
+          {id:"w10-tu-run",time:"Lunch",label:"Zone 2 run + strides",dur:"55 min + strides",warmup:"run",threshold:{title:"Metronome: 165 BPM first 20 min. Strides: 6 x 25 sec / 60 sec walk",desc:"Same as Week 9. Consistent repetition cements the pattern."}}
+        ]},
+        Wed:{type:"train",sessions:[
+          {id:"w10-we-lift",time:"AM",label:"Posterior chain",dur:"35-40 min",warmup:"lower_post",exercises:[
+            {n:"Barbell RDL",s:4,r:"6-8",l:"Heavier than Week 9 if earned",rest:"90s",note:"3 sec descent"},
+            {n:"Barbell hip thrust",s:4,r:"8-10",l:"Heavier if earned",rest:"90s",note:"Squeeze 2 sec"},
+            {n:"Bulgarian split squat - barbell",s:3,r:"8 each",l:"Moderate-heavy",rest:"75s",note:"Full ROM"},
+            {n:"Weighted pull-up",s:3,r:"5-6",l:"Add load",rest:"90s",note:"Full hang"},
+            {n:"Single arm row",s:4,r:"8 each",l:"Heavy",rest:"60s",note:"Controlled"},
+            {n:"Farmer carry",s:3,r:"40 sec walk",l:"Heavy",rest:"60s",note:"Heavier than Week 9 if earned"},
+          ]},
+          {id:"w10-we-run",time:"Lunch",label:"Threshold - bridge to continuous",dur:"44-47 min",warmup:"run",threshold:{title:"2 x 10 min at threshold / 2 min easy jog recovery",desc:"Same structure as Week 9. Metronome: TBD BPM — warm-up and recovery jog only. Goal is to hold threshold pace more smoothly. Note Garmin spm."}}
+        ]},
+        Thu:{type:"rest"},
+        Fri:{type:"train",sessions:[
+          {id:"w10-fr-lift",time:"AM",label:"Squat + push/pull",dur:"35-40 min",warmup:"lower_squat",plyo:PLYO_B1_FRI,exercises:[
+            {n:"Barbell back squat",s:4,r:"6-8",l:"Heavier than Week 9 if earned",rest:"90s",note:"3 sec descent"},
+            {n:"DB floor press",s:3,r:"8-10",l:"Moderate-heavy",rest:"60s",note:"2 sec descent"},
+            {n:"Single leg RDL - barbell",s:3,r:"8 each",l:"Moderate-heavy",rest:"60s",note:"Controlled"},
+            {n:"Barbell push press",s:3,r:"6-8",l:"Moderate",rest:"75s",note:"Explosive up, controlled down"},
+            {n:"Dead bug with DB pullover",s:2,r:"8 each",l:"Light",rest:"30s",note:"Slow"},
+          ]},
+          {id:"w10-fr-run",time:"Lunch",label:"Threshold - short and sharp",dur:"44-47 min",warmup:"run",threshold:{title:"5 x 4 min at threshold / 60 sec easy jog recovery",desc:"8 min easy warm-up, 5 intervals, 5 min cooldown. Same rest as Week 9. No metronome — natural cadence baseline. Note Garmin spm."}}
+        ]},
+        Sat:{type:"train",sessions:[
+          {id:"w10-sa-run",time:"Lunch",label:"Long Zone 2 run",dur:"90-95 min",warmup:"run",threshold:{title:"Easy throughout. Fuel every 30 min beyond 45 min mark",desc:"Metronome: 165 BPM for middle 20 min. Note cadence."}}
+        ]},
+        Sun:{type:"train",sessions:[
+          {id:"w10-su-run",time:"AM",label:"Hills - Week 10",dur:"40-45 min",warmup:"run",threshold:{title:"10 min warm-up, hill repeats, 10 min cooldown",desc:"Week 10 = hills. 10-12 efforts. Metronome: TBD BPM — warm-up only. Turn off for efforts. Full recovery between."}}
+        ]}
+      }},
+      {id:11,name:"Week 11",sub:"Full Load Test",days:{
+        Mon:{type:"rest"},
+        Tue:{type:"train",sessions:[
+          {id:"w11-tu-lift",time:"AM",label:"Upper body + core - full load",dur:"35-40 min",warmup:"upper",plyo:PLYO_B1_TUE,exercises:[
+            {n:"Weighted pull-up",s:4,r:"5-6",l:"Hold Weeks 9-10 load - consolidate",rest:"90s",note:"Same load as Weeks 9-10. Prove the adaptation."},
+            {n:"Single arm DB row",s:4,r:"8 each",l:"Heavy",rest:"60s",note:"Consistent heavy"},
+            {n:"DB floor press",s:3,r:"8-10",l:"Moderate-heavy",rest:"60s",note:"2 sec descent"},
+            {n:"Barbell overhead press",s:3,r:"6-8",l:"Moderate",rest:"75s",note:"Strict"},
+            {n:"Band face pull",s:3,r:"15",l:"Moderate-heavy band",rest:"30s",note:"Hold end range"},
+            {n:"Ab wheel or hollow body",s:3,r:"8 / 30 sec",l:"Bodyweight",rest:"30s",note:"Full control"},
+          ]},
+          {id:"w11-tu-run",time:"Lunch",label:"Zone 2 run + strides - full load",dur:"60 min + strides",warmup:"run",threshold:{title:"Metronome: 165 BPM first 20 min. Strides: 6 x 25 sec / 60 sec walk",desc:"Full program Zone 2 duration. Same strides. Do not add load this week - consolidate."}}
+        ]},
+        Wed:{type:"train",sessions:[
+          {id:"w11-we-lift",time:"AM",label:"Posterior chain - full load",dur:"35-40 min",warmup:"lower_post",exercises:[
+            {n:"Barbell RDL",s:4,r:"6-8",l:"Hold Weeks 9-10 load",rest:"90s",note:"Do not increase load this week - consolidate"},
+            {n:"Barbell hip thrust",s:4,r:"8-10",l:"Hold load",rest:"90s",note:"Squeeze 2 sec"},
+            {n:"Bulgarian split squat - barbell",s:3,r:"8 each",l:"Moderate-heavy",rest:"75s",note:"Full ROM"},
+            {n:"Weighted pull-up",s:3,r:"5-6",l:"Hold load",rest:"90s",note:"Full hang"},
+            {n:"Single arm row",s:4,r:"8 each",l:"Heavy",rest:"60s",note:"Controlled"},
+            {n:"Farmer carry",s:3,r:"40 sec walk",l:"Heavy",rest:"60s",note:"Hold load"},
+          ]},
+          {id:"w11-we-run",time:"Lunch",label:"Threshold - full load",dur:"47-50 min",warmup:"run",threshold:{title:"2 x 12 min at threshold / 2 min easy jog recovery",desc:"8 min easy warm-up, 2 long intervals, 5 min cooldown. Total threshold: 24 min. Metronome: TBD BPM — warm-up and recovery jog only. Note Garmin spm."}}
+        ]},
+        Thu:{type:"rest"},
+        Fri:{type:"train",sessions:[
+          {id:"w11-fr-lift",time:"AM",label:"Squat + push/pull - full load",dur:"35-40 min",warmup:"lower_squat",plyo:PLYO_B1_FRI,exercises:[
+            {n:"Barbell back squat",s:4,r:"6-8",l:"Hold Weeks 9-10 load",rest:"90s",note:"Do not increase load this week"},
+            {n:"DB floor press",s:3,r:"8-10",l:"Hold load",rest:"60s",note:"2 sec descent"},
+            {n:"Single leg RDL - barbell",s:3,r:"8 each",l:"Hold load",rest:"60s",note:"Controlled"},
+            {n:"Barbell push press",s:3,r:"6-8",l:"Moderate",rest:"75s",note:"Explosive up, controlled down"},
+            {n:"Dead bug with DB pullover",s:2,r:"8 each",l:"Light",rest:"30s",note:"Slow"},
+          ]},
+          {id:"w11-fr-run",time:"Lunch",label:"Threshold - full load",dur:"47-50 min",warmup:"run",threshold:{title:"5 x 4 min at threshold / 60 sec easy jog recovery",desc:"8 min easy warm-up, 5 intervals, 5 min cooldown. Total threshold: 20 min. No metronome — natural cadence baseline. Note Garmin spm."}}
+        ]},
+        Sat:{type:"train",sessions:[
+          {id:"w11-sa-run",time:"Lunch",label:"Long Zone 2 - full load",dur:"100-110 min",warmup:"run",threshold:{title:"First serious long run. Fuel every 30 min beyond 45 min mark",desc:"Metronome: 165 BPM for middle 20 min. Note cadence. This is your first 100+ min long run."}}
+        ]},
+        Sun:{type:"train",sessions:[
+          {id:"w11-su-run",time:"AM",label:"Full sprint or hill protocol",dur:"45 min",warmup:"run",threshold:{title:"Full Hybrid Engine Pro Sunday session",desc:"Alternate hills and track. Metronome: TBD BPM — warm-up only. Turn off for efforts."}}
+        ]}
+      }},
+      {id:12,name:"Week 12",sub:"Deload + Block 3 Entry",days:{
+        Mon:{type:"rest"},
+        Tue:{type:"train",sessions:[
+          {id:"w12-tu-lift",time:"AM",label:"Upper body + core - deload",dur:"25 min",warmup:"upper",exercises:[
+            {n:"Pull-up or band-assisted",s:2,r:"5",l:"Reduce load 20%",rest:"90s",note:"Deload week - reduce sets and load"},
+            {n:"Single arm DB row",s:2,r:"8 each",l:"Light",rest:"45s",note:"Easy"},
+            {n:"DB floor press",s:2,r:"8",l:"Light",rest:"60s",note:"Deload"},
+            {n:"Dead bug",s:2,r:"6 each",l:"Bodyweight",rest:"30s",note:"Gentle"},
+          ]},
+          {id:"w12-tu-run",time:"Lunch",label:"Easy Zone 2 - deload",dur:"40-45 min",warmup:"run",threshold:{title:"Metronome 165 BPM first 20 min. No strides",desc:"Reduced duration. Assess: HRV trend, remaining aches, cadence progress."}}
+        ]},
+        Wed:{type:"train",sessions:[
+          {id:"w12-we-lift",time:"AM",label:"Posterior chain - deload",dur:"25 min",warmup:"lower_post",exercises:[
+            {n:"Barbell RDL",s:2,r:"8",l:"Reduce load 20%",rest:"60s",note:"Deload - easy"},
+            {n:"Barbell hip thrust",s:2,r:"10",l:"Light",rest:"60s",note:"No grinding"},
+            {n:"Band clamshell",s:2,r:"12 each",l:"Light band",rest:"30s",note:"Gentle"},
+          ]},
+          {id:"w12-we-run",time:"Lunch",label:"Zone 2 only - no threshold",dur:"35 min",warmup:"run",threshold:{title:"Zone 2 only - no threshold work this week",desc:"Easy pace. Prepare for Block 3 entry. Metronome: TBD BPM first 20 min. Note Garmin spm."}}
+        ]},
+        Thu:{type:"rest"},
+        Fri:{type:"train",sessions:[
+          {id:"w12-fr-lift",time:"AM",label:"Squat + push/pull - deload",dur:"25 min",warmup:"lower_squat",exercises:[
+            {n:"Barbell back squat",s:2,r:"6",l:"Reduce load 20%",rest:"90s",note:"Deload"},
+            {n:"DB floor press",s:2,r:"8",l:"Light",rest:"60s",note:"Easy"},
+            {n:"Pull-up",s:2,r:"4",l:"Bodyweight",rest:"90s",note:"No added load"},
+            {n:"Dead bug",s:2,r:"6 each",l:"Bodyweight",rest:"30s",note:"Gentle"},
+          ]},
+          {id:"w12-fr-run",time:"Lunch",label:"Zone 2 only - no threshold",dur:"35 min",warmup:"run",threshold:{title:"Zone 2 only - no threshold work this week",desc:"Easy and short. Block 3 half marathon training begins next week. No metronome — natural cadence. Note Garmin spm."}}
+        ]},
+        Sat:{type:"train",sessions:[
+          {id:"w12-sa-run",time:"Lunch",label:"Long Zone 2 - deload",dur:"65-70 min",warmup:"run",threshold:{title:"Easy pace - shorter than Week 11",desc:"Metronome: 165 BPM for middle 20 min. Drop long run by 30-40%. Active recovery and consolidation."}}
+        ]},
+        Sun:{type:"train",sessions:[
+          {id:"w12-su-run",time:"AM",label:"Easy jog - deload",dur:"30 min",warmup:"run",threshold:{title:"Easy recovery jog only - no hills no sprints",desc:"Active recovery only. Metronome TBD BPM if running. Bring weight log and feedback for Block 3 plan update."}}
+        ]}
+      }},
+    ]}
+  ]
+};
+
+let S = {
+  tab:"today", cb:0, cw:0, selDay:"Tue",
+  logs:{}, summaries:{}, cadence:{}, open:{}, logTab:"session",
+  bodyLogs:[], uploadedImgs:{}
+};
+
+function getDayState(key, def) {
+  const k=dkey(); if(!S.logs[k])S.logs[k]={};
+  return S.logs[k][key]!==undefined ? S.logs[k][key] : def;
+}
+function setDayState(key, val) {
+  const k=dkey(); if(!S.logs[k])S.logs[k]={};
+  S.logs[k][key]=val; saveState();
+}
+function getHrv() { return getDayState('hrv', null); }
+function setHrv(v) { setDayState('hrv', v); render(); }
+function getRecovery() { return getDayState('recovery', null); }
+function getTightness() { return getDayState('tightness', []); }
+function toggleTightnessDay(z) { let t=[...getTightness()]; const i=t.indexOf(z); if(i>-1)t.splice(i,1); else t.push(z); setDayState('tightness',t); render(); }
+
+// Per-day nutrition
+function getNutrition() { return getDayState('nutrition', {cals:"",protein:"",carbs:"",fat:"",water:0}); }
+function setNutrition(field,val) { const n={...getNutrition()}; n[field]=val; setDayState('nutrition',n); }
+
+// Per-day sleep
+function getSleep() { return getDayState('sleep', {score:"",hours:"",quality:null}); }
+function setSleep(field,val) { const sl={...getSleep()}; sl[field]=val; setDayState('sleep',sl); }
+
+// Per-day cycle — autopopulates from yesterday's day+1 if not yet set
+function getCycleAutoDay() {
+  // Look back up to 7 days for the most recent logged cycle day
+  const todayIdx = DAYS.indexOf(S.selDay);
+  for(let back=1; back<=7; back++){
+    let bi=S.cb, wi=S.cw, di=todayIdx-back;
+    while(di<0){
+      if(wi>0){wi--; di+=7;}
+      else if(bi>0){bi--;wi=PLAN.blocks[bi].weeks.length-1;di+=7;}
+      else break;
+    }
+    if(di<0) break;
+    const prevKey=`b${bi}w${wi}d${DAYS[di]}`;
+    const prevCy=S.logs[prevKey]?.cycle;
+    if(prevCy?.day){
+      const prevDayNum=parseInt(prevCy.day);
+      const cycleLen=parseInt(prevCy.length)||28;
+      return String(((prevDayNum-1+back)%cycleLen)+1);
+    }
+  }
+  return "";
+}
+function getCycle() {
+  const stored = getDayState('cycle', null);
+  if(stored) return stored;
+  // Not yet logged today — autopopulate day from yesterday
+  const autoDay = getCycleAutoDay();
+  return {day: autoDay, flow:"", symptoms:[], notes:"", length:""};
+}
+function setCycle(field,val) { const cy={...getCycle()}; cy[field]=val; setDayState('cycle',cy); }
+function toggleSymDay(sym) { const cy={...getCycle()}; const i=cy.symptoms.indexOf(sym); if(i>-1)cy.symptoms.splice(i,1); else cy.symptoms.push(sym); setDayState('cycle',cy); render(); }
+
+function getPlanStart() {
+  const stored = localStorage.getItem("hep_plan_start");
+  if(!stored) return PLAN_START_DEFAULT;
+  const p = stored.split("-");
+  return new Date(+p[0], +p[1]-1, +p[2]);
+}
+function getApiKey() { return localStorage.getItem("hep_api_key") || ""; }
+function saveState() { try { localStorage.setItem("hep_state", JSON.stringify(S)); } catch(e) {} }
+function loadState() { try { const r = localStorage.getItem("hep_state"); if(r) Object.assign(S, JSON.parse(r)); } catch(e) {} }
+
+function blk() { return PLAN.blocks[S.cb]; }
+function wk() { return PLAN.blocks[S.cb].weeks[S.cw]; }
+function getWSD(bi,wi) {
+  let wc = 0;
+  for(let b=0;b<bi;b++) wc += PLAN.blocks[b].weeks.length;
+  wc += wi;
+  const d = new Date(getPlanStart());
+  d.setDate(d.getDate() + wc*7);
+  return d;
+}
+function getDayDate(bi,wi,di) {
+  const d = new Date(getWSD(bi,wi));
+  d.setDate(d.getDate()+di);
+  return d;
+}
+function selDate() { return getDayDate(S.cb,S.cw,DAYS.indexOf(S.selDay)); }
+function isCamping(d) { return d>=CAMPING_START && d<=CAMPING_END; }
+function isTravel(d) { return d>=TRAVEL_START && d<=TRAVEL_END; }
+function fmtDate(d) { return `${MONTHS[d.getMonth()]} ${d.getDate()}`; }
+function fmtDateFull(d) { return `${DAY_NAMES[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`; }
+function dkey() { return `b${S.cb}w${S.cw}d${S.selDay}`; }
+function wkey() { return `b${S.cb}w${S.cw}`; }
+
+function dayData() {
+  const d = selDate();
+  if(isCamping(d)) return {type:"camping"};
+  const dd = wk().days[S.selDay] || {type:"rest"};
+  if(wk().istravel) return dd.type==="travel_train" ? {type:"travel_train"} : {type:"travel_rest"};
+  return dd;
+}
+
+function getLog(sid,ei,si,f) { return S.logs[dkey()]?.[sid]?.sets?.[`${ei}-${si}`]?.[f]||""; }
+function setLogV(sid,ei,si,f,v) {
+  const k=dkey(); if(!S.logs[k])S.logs[k]={};
+  if(!S.logs[k][sid])S.logs[k][sid]={sets:{},fb:""};
+  if(!S.logs[k][sid].sets[`${ei}-${si}`])S.logs[k][sid].sets[`${ei}-${si}`]={};
+  S.logs[k][sid].sets[`${ei}-${si}`][f]=v; saveState();
+}
+function getFb(sid) { return S.logs[dkey()]?.[sid]?.fb||""; }
+function setFb(sid,v) { const k=dkey(); if(!S.logs[k])S.logs[k]={}; if(!S.logs[k][sid])S.logs[k][sid]={sets:{},fb:""}; S.logs[k][sid].fb=v; saveState(); }
+function setRpe(sid,v) { const k=dkey(); if(!S.logs[k])S.logs[k]={}; if(!S.logs[k][sid])S.logs[k][sid]={sets:{},fb:"",rpe:null}; S.logs[k][sid].rpe=v; saveState(); render(); }
+function rpeLabel(n) { const l={1:"Very easy, barely any effort",2:"Easy, comfortable",3:"Moderate, could go all day",4:"Somewhat hard",5:"Hard but sustainable",6:"Hard, breathing heavy",7:"Very hard, few words only",8:"Very hard, almost unsustainable",9:"Near maximal",10:"Maximal, all-out effort"}; return l[n]||""; }
+
+function showTab(t) {
+  S.tab=t;
+  ["today","log","health","progress","plan"].forEach(x=>{
+    const b=document.getElementById("nav-"+x);
+    if(b) b.classList.toggle("active",x===t);
+  });
+  render();
+}
+
+function updateBadges() {
+  const hb=document.getElementById("hrv-badge");
+  if(hb){
+    if(!getHrv()){hb.className="pill pt";hb.textContent="HRV: –";}
+    else if(getHrv()==="green"){hb.className="pill pg";hb.textContent="HRV: Green";}
+    else if(getHrv()==="orange"){hb.className="pill po";hb.textContent="HRV: Orange";}
+    else{hb.className="pill pr";hb.textContent="HRV: Red";}
+  }
+  const cb=document.getElementById("cycle-badge");
+  if(cb){ const cy=getCycle(); cb.style.display=cy.day?"":"none"; if(cy.day) cb.textContent="Day "+cy.day; }
+}
+
+function openSettings() {
+  document.getElementById("settings-modal").style.display="flex";
+  const k=getApiKey();
+  const inp=document.getElementById("api-key-input");
+  if(inp) inp.value=k;
+  const ks=document.getElementById("key-status");
+  if(ks) ks.innerHTML=k?`<div class="success-box">API key is saved and active. AI features are enabled.</div>`:`<div class="warning-box">No API key saved. AI analysis features require a key. See instructions below.</div>`;
+  const psi=document.getElementById("plan-start-input");
+  if(psi){ const ps=getPlanStart(); psi.value=ps.toISOString().split("T")[0]; }
+}
+function closeSettings() { document.getElementById("settings-modal").style.display="none"; }
+function saveApiKey() {
+  const v=document.getElementById("api-key-input").value.trim();
+  if(!v){alert("Please enter an API key.");return;}
+  if(!v.startsWith("sk-ant")){alert("That doesn't look like an Anthropic API key. It should start with sk-ant-");return;}
+  localStorage.setItem("hep_api_key",v);
+  document.getElementById("key-status").innerHTML=`<div class="success-box">API key saved. AI features are now active.</div>`;
+  setTimeout(closeSettings,1200);
+}
+function savePlanStart() {
+  const v=document.getElementById("plan-start-input").value;
+  if(v){ localStorage.setItem("hep_plan_start",v); alert("Plan start date updated."); closeSettings(); render(); }
+}
+function clearAllData() { localStorage.removeItem("hep_state"); S={tab:"today",cb:0,cw:0,selDay:"Tue",logs:{},summaries:{},cadence:{},open:{},logTab:"session",bodyLogs:[],uploadedImgs:{}}; closeSettings(); render(); }
+
+function renderToday() {
+  const d=S.selDay, dd=dayData(), b=blk(), w=wk();
+  const sd=selDate();
+  document.getElementById("topbar-sub").textContent=`${b.name} · ${w.name}`;
+  let h=`<div class="wk-nav">
+    <button class="wk-btn" onclick="prevWeek()">&#8592;</button>
+    <div style="text-align:center">
+      <div style="font-size:15px;font-weight:700;color:var(--text1)">${d} · ${fmtDate(sd)}</div>
+      <div style="font-size:11px;color:var(--text2)">${w.name} · ${fmtDateFull(sd)}</div>
+    </div>
+    <button class="wk-btn" onclick="nextWeek()">&#8594;</button>
+  </div>
+  <div class="day-grid">`;
+  DAYS.forEach((x,xi)=>{
+    const xd=getDayDate(S.cb,S.cw,xi);
+    const camping=isCamping(xd), trav=isTravel(xd)&&!wk().istravel;
+    const xdd=wk().days[x]||{type:"rest"};
+    const dayKey=`b${S.cb}w${S.cw}d${x}`;
+    const dayLog=S.logs[dayKey]||{};
+    // A day counts as "completed" if any session has RPE logged or sets logged
+    const isCompleted=(()=>{
+      if(xdd.type==="rest"||xdd.type==="travel_rest") return false;
+      const sessions=(xdd.sessions)||(wk().istravel&&xdd.type==="travel_train"?[TRAVEL_STR,TRAVEL_RUN]:[]);
+      return (sessions||[]).some(sess=>{
+        const sl=dayLog[sess.id];
+        if(!sl) return false;
+        return sl.rpe||Object.keys(sl.sets||{}).length>0;
+      });
+    })();
+    const hasLog=!!Object.keys(dayLog).length;
+    const isTravelChip=wk().istravel&&xdd.type==="travel_train";
+    let chipClass="day-chip";
+    if(x===d) chipClass+=" active";
+    else if(isCompleted) chipClass+=" completed";
+    else if(camping) chipClass+=" camping";
+    else if(trav) chipClass+=" travel";
+    else if(hasLog) chipClass+=" haslog";
+    else if(xdd.type==="rest"||xdd.type==="travel_rest") chipClass+=" offday";
+    h+=`<div class="${chipClass}" onclick="selDay('${x}')">
+      <div class="dc-name">${x}</div>
+      <div class="dc-date">${fmtDate(xd)}</div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  if(getRecovery()!==null && getHrv()){
+    const rc={1:"var(--red-light)",2:"var(--orange-light)",3:"var(--surface2)",4:"var(--green-light)",5:"var(--teal-light)"};
+    const rt={1:"Poor",2:"Below avg",3:"Moderate",4:"Good",5:"Excellent"};
+    h+=`<div style="background:${rc[getRecovery()]};border-radius:var(--radius-sm);padding:9px 12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:12px;font-weight:700;color:var(--text1)">Today's readiness</span>
+      <span style="font-size:12px;color:var(--text2)">${rt[getRecovery()]} · HRV ${getHrv()}</span>
+    </div>`;
+  }
+
+  if(dd.type==="camping"){
+    h+=`<div class="card" style="text-align:center;padding:28px 20px">
+      <div style="font-size:40px;margin-bottom:10px">&#9968;</div>
+      <div style="font-size:16px;font-weight:700;color:var(--text1);margin-bottom:4px">Camping — Jun 4–7</div>
+      <div style="font-size:13px;color:var(--text2)">Planned rest days. Enjoy it. Walk when you feel like it. Log your water.</div>
+    </div>`;
+  } else if(dd.type==="travel_rest"||dd.type==="rest"){
+    h+=`<div class="card" style="text-align:center;padding:28px 20px">
+      <div style="width:44px;height:44px;border-radius:50%;background:var(--teal-light);margin:0 auto 10px;display:flex;align-items:center;justify-content:center">
+        <svg width="22" height="22" viewBox="0 0 20 20" fill="none"><path d="M10 4v6l3 3" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="7" stroke="var(--teal)" stroke-width="1.5"/></svg>
+      </div>
+      <div style="font-size:15px;font-weight:700;color:var(--text1);margin-bottom:4px">${wk().istravel?"Rest · explore · recover":"Rest day"}</div>
+      <div style="font-size:13px;color:var(--text2)">${wk().istravel?"Walk, sightsee, recover. No structured training today.":"Full recovery. 10 min mobility if tight."}</div>
+    </div>`;
+  } else if(dd.type==="travel_train"){
+    h+=`<div class="travel-blk"><div class="travel-title">Travel maintenance day</div><div class="travel-desc">Ad hoc — do when time and energy allow. Partial sessions count. Protein is your #1 priority today.</div></div>`;
+    [TRAVEL_STR, TRAVEL_RUN].forEach(sess=>{
+      const isOpen=S.open[sess.id];
+      h+=buildSessBlock(sess,isOpen);
+    });
+  } else if(dd.sessions){
+    dd.sessions.forEach(sess=>{
+      const isOpen=S.open[sess.id];
+      h+=buildSessBlock(sess,isOpen);
+    });
+  }
+
+  const sum=S.summaries[dkey()];
+  if(sum) h+=renderSum(sum);
+  document.getElementById("main-content").innerHTML=h;
+  updateBadges();
+}
+
+function buildSessBlock(sess,isOpen){
+  let h=`<div class="sess-block"><div class="sess-hdr" onclick="tog('${sess.id}')">
+    <div><div class="sess-title">${sess.time||"Session"} — ${sess.label}</div><div class="sess-sub">${sess.dur}</div></div>
+    <span class="chev${isOpen?" open":""}">&#9654;</span>
+  </div>`;
+  if(isOpen){
+    h+=`<div class="sess-body">`;
+    if(sess.note) h+=`<div style="background:var(--pink-light);border-radius:var(--radius-sm);padding:9px 11px;margin-bottom:9px;font-size:12px;color:var(--pink);line-height:1.5">${sess.note}</div>`;
+    if(sess.plyo){
+      h+=`<div class="plyo-blk"><div class="plyo-title">${sess.plyo.title}</div><div class="plyo-desc">${sess.plyo.note}</div>`;
+      sess.plyo.moves.forEach(m=>{
+        h+=`<div style="padding:5px 0;border-top:0.5px solid rgba(83,74,183,0.2);margin-top:5px"><div style="font-size:12px;font-weight:700;color:var(--purple)">${m.n}</div><div style="font-size:11px;color:var(--purple)">${m.v} · Rest ${m.r} · ${m.c}</div></div>`;
+      });
+      h+=`</div>`;
+    }
+    if(sess.warmup){
+      const wu=WU[sess.warmup]||[];
+      h+=`<div style="margin-bottom:10px"><div class="sec-lbl">Warm-up (5 min)</div>`;
+      wu.forEach((w,i)=>{h+=`<div class="wu-step"><div class="wu-num">${i+1}</div><div class="wu-txt">${w}</div></div>`;});
+      h+=`</div>`;
+    }
+    if(sess.threshold) h+=`<div class="thr-blk"><div class="thr-title">${sess.threshold.title}</div><div class="thr-desc">${sess.threshold.desc}</div></div>`;
+    if(sess.exercises){
+      h+=`<div class="sec-lbl">Exercises</div>`;
+      sess.exercises.forEach(ex=>{
+        h+=`<div class="ex-row"><div class="ex-name">${ex.n}</div><div class="ex-meta">${ex.s} sets × ${ex.r} · Load: ${ex.l} · Rest: ${ex.rest}</div><div class="ex-note">${ex.note}</div></div>`;
+      });
+    }
+    h+=`<button class="s-btn" onclick="showTab('log')">Log this session →</button>`;
+    h+=`</div>`;
+  }
+  h+=`</div>`;
+  return h;
+}
+
+function renderLog(){
+  const tabs=["Session","Garmin"];
+  let h=`<div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">${fmtDateFull(selDate())}</div>`;
+  h+=`<div class="tab-row">`;
+  tabs.forEach(t=>{ h+=`<button class="tab-item${S.logTab===t.toLowerCase()?" active":""}" onclick="setLogTab('${t.toLowerCase()}')">${t}</button>`; });
+  h+=`</div>`;
+  if(S.logTab==="session") h+=renderLogSession();
+  else h+=renderLogGarmin();
+  document.getElementById("main-content").innerHTML=h;
+  updateBadges();
+}
+
+function renderLogSession(){
+  const dd=dayData();
+  let h=`<div class="card"><div class="card-hdr">HRV + Recovery</div>
+  <div class="hrv-row">
+    <button class="hrv-btn${getHrv()==="green"?" hg":""}" onclick="setHrv('green')">Green</button>
+    <button class="hrv-btn${getHrv()==="orange"?" ho":""}" onclick="setHrv('orange')">Orange</button>
+    <button class="hrv-btn${getHrv()==="red"?" hr":""}" onclick="setHrv('red')">Red</button>
+  </div>`;
+  if(getHrv()){
+    const p={green:"Execute session as written.",orange:"Stay at floor of every range. Reduce load 15–20%. Extend threshold recovery 30 sec. Run by effort not pace.",red:"Easy Zone 2 walk or light jog only. No strength. No threshold. No exceptions."};
+    h+=`<div class="hrv-proto ${getHrv()}"><strong>${getHrv().charAt(0).toUpperCase()+getHrv().slice(1)}:</strong> ${p[getHrv()]}</div>`;
+  }
+  h+=`<div class="f-row" style="margin-top:8px"><label>Recovery score (1 = poor · 5 = excellent)</label>
+  <div style="display:flex;gap:5px">${[1,2,3,4,5].map(n=>`<button style="flex:1;padding:8px 3px;border:0.5px solid ${getRecovery()===n?"var(--teal)":"var(--border2)"};border-radius:var(--radius-sm);background:${getRecovery()===n?"var(--teal-light)":"none"};color:${getRecovery()===n?"var(--teal)":"var(--text2)"};cursor:pointer;font-family:inherit;font-size:13px;font-weight:600" onclick="setDayState('recovery',${n});render()">${n}</button>`).join("")}
+  </div></div></div>`;
+
+  h+=`<div class="card"><div class="card-hdr">Tightness / soreness</div>
+  <div class="body-zone-wrap">`;
+  BODY_ZONES.forEach(z=>{
+    const sel=getTightness().includes(z);
+    h+=`<div class="bz${sel?" sel":""}" onclick="toggleTightnessDay('${z}')">${z}</div>`;
+  });
+  h+=`</div></div>`;
+
+  const sessions=dd.sessions||(dd.type==="travel_train"?[TRAVEL_STR]:[]);
+  sessions.forEach(sess=>{
+    if(!sess.exercises) return;
+    const isOpen=S.open["log-"+sess.id];
+    h+=`<div class="card" style="padding:0;overflow:hidden">
+      <div class="sess-hdr" onclick="tog('log-${sess.id}')">
+        <div><div class="sess-title">${sess.time||"Session"} — ${sess.label}</div><div class="sess-sub">Tap to log sets and weights</div></div>
+        <span class="chev${isOpen?" open":""}">&#9654;</span>
+      </div>`;
+    if(isOpen){
+      h+=`<div class="sess-body">`;
+      sess.exercises.forEach((ex,ei)=>{
+        h+=`<div style="margin-bottom:13px">
+          <div class="ex-name" style="margin-bottom:4px">${ex.n}</div>
+          <div class="ex-meta" style="margin-bottom:6px">${ex.s} sets × ${ex.r} · ${ex.l}</div>
+          <div class="set-lbl-row"><div class="set-lbl">#</div><div class="set-lbl">Weight</div><div class="set-lbl">Reps done</div><div class="set-lbl"></div></div>`;
+        for(let si=0;si<ex.s;si++){
+          h+=`<div class="set-row">
+            <div class="set-num">${si+1}</div>
+            <input class="set-in" type="text" inputmode="decimal" placeholder="lbs" value="${getLog(sess.id,ei,si,'w')}" onchange="setLogV('${sess.id}',${ei},${si},'w',this.value)">
+            <input class="set-in" type="text" inputmode="numeric" placeholder="reps" value="${getLog(sess.id,ei,si,'r')}" onchange="setLogV('${sess.id}',${ei},${si},'r',this.value)">
+            <button class="set-del" onclick="clearSet('${sess.id}',${ei},${si})">&#215;</button>
+          </div>`;
+        }
+        h+=`</div>`;
+      });
+      const sessRpe=S.logs[dkey()]?.[sess.id]?.rpe||null;
+      h+=`<div class="f-row" style="margin-top:8px"><label>Session RPE (1 = very easy · 10 = maximal)</label>
+      <div style="display:flex;gap:3px">${[1,2,3,4,5,6,7,8,9,10].map(n=>{
+        const col=n<=3?"var(--green)":n<=5?"var(--teal)":n<=7?"var(--orange)":"var(--red)";
+        const bg=n<=3?"var(--green-light)":n<=5?"var(--teal-light)":n<=7?"var(--orange-light)":"var(--red-light)";
+        return "<button style=\"flex:1;padding:7px 1px;border:0.5px solid "+(sessRpe===n?col:"var(--border2)")+";border-radius:var(--radius-sm);background:"+(sessRpe===n?bg:"none")+";color:"+(sessRpe===n?col:"var(--text2)")+";cursor:pointer;font-family:inherit;font-size:12px;font-weight:600\" onclick=\"setRpe('"+sess.id+"',"+n+")\">"+n+"</button>";
+      }).join("")}</div>
+      ${sessRpe?`<div style="font-size:11px;color:var(--text2);margin-top:4px">${rpeLabel(sessRpe)}</div>`:""}
+      </div>`;
+      h+=`<div class="f-row"><label>Session notes</label><textarea onchange="setFb('${sess.id}',this.value)">${getFb(sess.id)}</textarea></div>`;
+      h+=`</div>`;
+    }
+    h+=`</div>`;
+  });
+
+  h+=`<div class="card"><div class="card-hdr">Overall day notes</div>
+  <div class="f-row"><textarea placeholder="General feeling, sleep quality, anything to flag..." onchange="S.logs[dkey()]=S.logs[dkey()]||{};S.logs[dkey()].dayNote=this.value;saveState()">${S.logs[dkey()]?.dayNote||""}</textarea></div></div>`;
+  h+=`<button class="p-btn" id="gen-sum-btn" onclick="genSummary()">Generate AI session summary →</button>`;
+  if(!getApiKey()) h+=`<div style="font-size:11px;color:var(--text2);text-align:center;margin-top:6px">No API key — tap the settings icon to add your key and enable AI summaries.</div>`;
+  const sum=S.summaries[dkey()];
+  if(sum) h+=`<div style="margin-top:10px">${renderSum(sum)}</div>`;
+  return h;
+}
+
+function getMaxHR() {
+  const stored = localStorage.getItem("hep_max_hr");
+  return stored ? parseInt(stored) : 197;
+}
+function saveMaxHR(v) {
+  const n = parseInt(v);
+  if(n >= 140 && n <= 230) { localStorage.setItem("hep_max_hr", n); render(); }
+}
+
+function renderHRZones() {
+  const mhr = getMaxHR();
+  const lthr = Math.round(mhr * 0.885); // ~LT is ~88.5% of MHR, keep close to 174 at 197
+  const zones = [
+    { num:1, name:"Warm-up",   pctLo:50, pctHi:60, color:"#5BB8F5", colorName:"light blue" },
+    { num:2, name:"Easy",      pctLo:60, pctHi:70, color:"#2563EB", colorName:"blue" },
+    { num:3, name:"Aerobic",   pctLo:70, pctHi:80, color:"#22C55E", colorName:"green" },
+    { num:4, name:"Threshold", pctLo:80, pctHi:90, color:"#F97316", colorName:"orange" },
+    { num:5, name:"Maximum",   pctLo:90, pctHi:100,color:"#EF4444", colorName:"red" },
+  ];
+  let h = `<div class="card">
+    <div class="card-hdr" style="margin-bottom:6px">Heart rate zones</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div>
+        <div style="font-size:11px;color:var(--text2)">Max HR</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+          <span style="font-size:20px;font-weight:700;color:var(--text1)" id="mhr-disp">${mhr} bpm</span>
+          <button style="font-size:11px;color:var(--teal);background:none;border:0.5px solid var(--teal);border-radius:var(--radius-sm);padding:3px 8px;cursor:pointer;font-family:inherit;font-weight:600" onclick="document.getElementById('mhr-edit').style.display='flex';this.style.display='none'">Edit</button>
+        </div>
+        <div id="mhr-edit" style="display:none;align-items:center;gap:5px;margin-top:4px">
+          <input id="mhr-inp" type="number" inputmode="numeric" min="140" max="230" value="${mhr}" style="width:70px;font-size:13px;padding:5px 8px;border:0.5px solid var(--teal);border-radius:var(--radius-sm);background:var(--surface);color:var(--text1);font-family:inherit">
+          <button style="font-size:12px;font-weight:700;color:white;background:var(--teal);border:none;border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer;font-family:inherit" onclick="saveMaxHR(document.getElementById('mhr-inp').value)">Save</button>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--text2)">Lactate threshold</div>
+        <div style="font-size:16px;font-weight:700;color:#F97316;margin-top:2px">174 bpm</div>
+        <div style="font-size:10px;color:var(--text3)">~88.5% MHR · fixed</div>
+      </div>
+    </div>`;
+
+  // Stacked spectrum bar — full range 0 to MHR, each zone sized by actual bpm width
+  // Zone 1 starts at 50% MHR so the lower ~50% is grey "below zone"
+  const totalBpm = mhr;
+  const belowPct = 50; // 0–50% MHR is below zone 1
+  h += `<div style="margin-bottom:14px">
+    <div style="display:flex;height:18px;border-radius:9px;overflow:hidden;margin-bottom:6px">
+      <div style="width:${belowPct}%;background:var(--surface2)"></div>`;
+  zones.forEach(z => {
+    const segPct = (z.pctHi - z.pctLo); // each zone is 10% of MHR
+    h += `<div style="width:${segPct}%;background:${z.color};opacity:0.9"></div>`;
+  });
+  h += `</div>
+    <div style="display:flex;position:relative;height:16px">
+      <div style="width:${belowPct}%;"></div>`;
+  // Tick labels at each zone boundary
+  zones.forEach((z, i) => {
+    const lo = Math.round(mhr * z.pctLo / 100);
+    const segPct = z.pctHi - z.pctLo;
+    h += `<div style="width:${segPct}%;position:relative;">
+      <span style="position:absolute;left:0;transform:translateX(-50%);font-size:9px;color:var(--text3);white-space:nowrap">${lo}</span>
+    </div>`;
+  });
+  // Final tick at MHR
+  h += `<span style="font-size:9px;color:var(--text3);white-space:nowrap;margin-left:-1px">${mhr}</span>
+    </div>
+  </div>`;
+
+  // Zone rows — label + bpm range only, no individual bars
+  zones.forEach(z => {
+    const lo = Math.round(mhr * z.pctLo / 100);
+    const hi = z.pctHi === 100 ? mhr : Math.round(mhr * z.pctHi / 100);
+    h += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="width:10px;height:10px;border-radius:2px;background:${z.color};flex-shrink:0"></div>
+      <div style="font-size:12px;font-weight:700;color:var(--text1);min-width:72px">Z${z.num} · ${z.name}</div>
+      <div style="font-size:11px;color:var(--text2)">${z.pctLo}–${z.pctHi}%</div>
+      <div style="font-size:12px;font-weight:600;color:var(--text1);margin-left:auto">${lo}–${hi} bpm</div>
+    </div>`;
+  });
+
+  // Cadence color key
+  h += `<div style="border-top:0.5px solid var(--border);margin-top:10px;padding-top:10px">
+    <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Garmin cadence color key</div>
+    <div style="display:flex;flex-direction:column;gap:5px">`;
+  const cadZones = [
+    { color:"#EF4444", label:"Red",    range:"< 151 spm",   note:"Below target" },
+    { color:"#F97316", label:"Orange", range:"151–162 spm",  note:"Approaching target" },
+    { color:"#22C55E", label:"Green",  range:"163–173 spm",  note:"Target zone" },
+    { color:"#2563EB", label:"Blue",   range:"174–185 spm",  note:"Above target" },
+    { color:"#8B5CF6", label:"Purple", range:"> 185 spm",    note:"High cadence" },
+  ];
+  cadZones.forEach(cz => {
+    h += `<div style="display:flex;align-items:center;gap:8px">
+      <div style="width:12px;height:12px;border-radius:3px;background:${cz.color};flex-shrink:0"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--text1);min-width:52px">${cz.label}</div>
+      <div style="font-size:12px;color:var(--text2);min-width:90px">${cz.range}</div>
+      <div style="font-size:11px;color:var(--text3)">${cz.note}</div>
+    </div>`;
+  });
+  h += `</div></div></div>`;
+  return h;
+}
+
+function renderLogGarmin(){
+  const k=dkey();
+  const uploads=[
+    {key:k+"-hr",label:"Heart rate graph",sub:"Screenshot from Garmin Connect"},
+    {key:k+"-cad",label:"Cadence graph",sub:"Screenshot from Garmin Connect"},
+    {key:k+"-other",label:"Activity summary",sub:"Pace, elevation, or other data"},
+  ];
+  let h=`<div class="card"><div class="card-hdr">Upload Garmin screenshots</div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5">Upload screenshots from the Garmin Connect app. The AI will analyze them against your prescribed training and give you specific flags.</div>`;
+  uploads.forEach((u,i)=>{
+    h+=`<div class="upload-zone" onclick="document.getElementById('gu${i}').click()">
+      ${S.uploadedImgs[u.key]?`<img class="up-preview" src="${S.uploadedImgs[u.key]}">`:
+      `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="margin:0 auto;color:var(--teal)"><path d="M12 16V8M8 12l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="3" y="3" width="18" height="18" rx="3" stroke="var(--border2)" stroke-width="1"/></svg>
+      <div style="font-size:13px;color:var(--text2);margin-top:6px;font-weight:600">${u.label}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:2px">${u.sub}</div>`}
+    </div>
+    <input type="file" id="gu${i}" accept="image/*" style="display:none" onchange="handleUpload(event,'${u.key}')">`;
+  });
+  h+=`</div>`;
+  h+=renderHRZones();
+  h+=`<div class="card"><div class="card-hdr">Manual cadence entry</div>
+  <div class="g2">
+    <div class="f-row"><label>Zone 2 cadence (spm)</label><input type="number" inputmode="numeric" placeholder="e.g. 157" value="${S.cadence[k]?.z2||""}" onchange="S.cadence['${k}']=S.cadence['${k}']||{};S.cadence['${k}'].z2=this.value;saveState()"></div>
+    <div class="f-row"><label>Threshold cadence (spm)</label><input type="number" inputmode="numeric" placeholder="e.g. 165" value="${S.cadence[k]?.th||""}" onchange="S.cadence['${k}']=S.cadence['${k}']||{};S.cadence['${k}'].th=this.value;saveState()"></div>
+  </div></div>`;
+  const hasImgs=uploads.some(u=>S.uploadedImgs[u.key]);
+  if(hasImgs){
+    h+=`<button class="p-btn" onclick="analyzeGarmin()">Analyze with AI →</button>`;
+    if(!getApiKey()) h+=`<div style="font-size:11px;color:var(--text2);text-align:center;margin-top:6px">Add your API key in settings to enable AI analysis.</div>`;
+    const ga=S.summaries[k+"-garmin"];
+    if(ga) h+=`<div style="margin-top:10px">${renderSum(ga)}</div>`;
+  }
+  return h;
+}
+
+function renderLogNutrition(){
+  const k=dkey();
+  const nut=getNutrition();
+  const pct=Math.min(100,Math.round((nut.water/84)*100));
+  let h=`<div class="card"><div class="card-hdr">MyFitnessPal screenshot</div>
+  <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.5">Upload a screenshot of your MFP daily diary or macro summary. The AI will flag issues against your targets (185g protein / 185g carbs / 41g fat).</div>
+  <div class="upload-zone" onclick="document.getElementById('mfp-up').click()">
+    ${S.uploadedImgs[k+"-mfp"]?`<img class="up-preview" src="${S.uploadedImgs[k+"-mfp"]}">`:
+    `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="margin:0 auto;color:var(--teal)"><path d="M12 16V8M8 12l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="3" y="3" width="18" height="18" rx="3" stroke="var(--border2)" stroke-width="1"/></svg>
+    <div style="font-size:13px;color:var(--text2);margin-top:6px;font-weight:600">MFP daily summary</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:2px">Screenshot of your macro totals</div>`}
+  </div>
+  <input type="file" id="mfp-up" accept="image/*" style="display:none" onchange="handleUpload(event,'${k}-mfp')">
+  </div>`;
+  h+=`<div class="card"><div class="card-hdr">Manual macro entry</div>
+  <div class="g2">
+    <div class="f-row"><label>Calories</label><input type="number" inputmode="numeric" placeholder="1840" value="${nut.cals}" onchange="setNutrition('cals',this.value)"></div>
+    <div class="f-row"><label>Protein (g) · target 185</label><input type="number" inputmode="numeric" placeholder="185" value="${nut.protein}" onchange="setNutrition('protein',this.value)"></div>
+    <div class="f-row"><label>Carbs (g) · target 185</label><input type="number" inputmode="numeric" placeholder="185" value="${nut.carbs}" onchange="setNutrition('carbs',this.value)"></div>
+    <div class="f-row"><label>Fat (g) · target 41</label><input type="number" inputmode="numeric" placeholder="41" value="${nut.fat}" onchange="setNutrition('fat',this.value)"></div>
+  </div></div>`;
+  h+=`<div class="card"><div class="card-hdr">Hydration tracker</div>
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+    <span style="font-size:24px;font-weight:700;color:var(--text1)">${nut.water} oz</span>
+    <span style="font-size:12px;color:var(--text2)">84 oz daily minimum</span>
+  </div>
+  <div class="hydro-track"><div class="hydro-fill" style="width:${pct}%"></div></div>
+  <div style="font-size:11px;color:var(--text2);margin-bottom:10px">${pct}% of minimum · Log freely beyond 84 oz</div>
+  <div style="display:flex;gap:5px;margin-bottom:6px">
+    ${[8,12,16,20].map(oz=>`<button style="flex:1;padding:7px 2px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:none;cursor:pointer;font-size:12px;font-family:inherit;font-weight:600;color:var(--text2)" onclick="setNutrition('water',getNutrition().water+${oz});render()">+${oz}</button>`).join("")}
+  </div>
+  <div style="display:flex;gap:5px">
+    ${[32,40,64].map(oz=>`<button style="flex:1;padding:7px 2px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:none;cursor:pointer;font-size:12px;font-family:inherit;font-weight:600;color:var(--text2)" onclick="setNutrition('water',getNutrition().water+${oz});render()">+${oz}</button>`).join("")}
+    <button style="flex:1;padding:7px 2px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:none;cursor:pointer;font-size:12px;font-family:inherit;color:var(--text3)" onclick="setNutrition('water',0);render()">Reset</button>
+  </div></div>`;
+  return h;
+}
+
+function renderLogCycle(){
+  const cy=getCycle();
+  let h=`<div class="card"><div class="card-hdr">Cycle tracking</div>
+  <div style="font-size:11px;color:var(--text2);margin-bottom:8px;line-height:1.5">Cycle day auto-filled from yesterday. Override by typing a new number — use this when your period starts to restart the count.</div>
+  <div class="g2">
+    <div class="f-row"><label>Cycle day</label><input type="number" inputmode="numeric" min="1" max="35" placeholder="e.g. 20" value="${cy.day}" onchange="setCycle('day',this.value);updateBadges()"></div>
+    <div class="f-row"><label>Cycle length (days)</label><input type="number" inputmode="numeric" placeholder="28" value="${cy.length||""}" onchange="setCycle('length',this.value)"></div>
+  </div></div>
+  <div class="card"><div class="card-hdr">Flow</div>
+  <div class="flow-row">`;
+  FLOW_OPTS.forEach(f=>{ h+=`<button class="flow-btn${cy.flow===f?" sel":""}" onclick="setCycle('flow','${f}');render()">${f}</button>`; });
+  h+=`</div></div>
+  <div class="card"><div class="card-hdr">Symptoms</div>
+  <div class="sym-grid">`;
+  SYMS.forEach(sym=>{
+    const sel=cy.symptoms.includes(sym);
+    h+=`<button class="sym-btn${sel?" sel":""}" onclick="toggleSymDay('${sym}')">${sym}</button>`;
+  });
+  h+=`</div></div>
+  <div class="card"><div class="card-hdr">Notes</div>
+  <div class="f-row"><textarea placeholder="Anything else to note..." onchange="setCycle('notes',this.value)">${cy.notes}</textarea></div></div>`;
+  if(cy.day){
+    const day=parseInt(cy.day);
+    let phase,advice,pColor;
+    if(day<=7){phase="Menstruation";advice="Moderate effort. Prioritize form over load. Increase iron-rich foods.";pColor="var(--pink-light)";}
+    else if(day<=13){phase="Late follicular — BEST WINDOW";advice="Push hardest here. PRs, longest runs, highest threshold effort. Best adaptation window each month.";pColor="var(--teal-light)";}
+    else if(day<=17){phase="Ovulation";advice="Peak power output. Best window for Sunday hill and sprint sessions.";pColor="var(--green-light)";}
+    else{phase="Luteal";advice="Conservative on load. Add 20–30g carbs on training days. Add 16 oz water daily. Run by effort not pace. Reduce threshold intervals 20%.";pColor="var(--orange-light)";}
+    h+=`<div style="background:${pColor};border-radius:var(--radius-sm);padding:12px 14px">
+      <div style="font-size:13px;font-weight:700;color:var(--text1);margin-bottom:3px">${phase}</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.5">${advice}</div>
+    </div>`;
+  }
+  return h;
+}
+
+function renderLogBody(){
+  const bd=getDayState('body',{date:"",weight:"",waist:"",belly:"",hips:"",rightThigh:"",leftThigh:""});
+  const today=selDate().toISOString().split("T")[0];
+  if(!bd.date) bd.date=today;
+  let h=`<div class="card"><div class="card-hdr">Body metrics</div>
+  <div class="f-row"><label>Date</label><input type="date" value="${bd.date}" onchange="(function(v){const b={...getDayState('body',{})};b.date=v;setDayState('body',b)})(this.value)"></div>
+  <div class="g2">
+    <div class="f-row"><label>Weight (lbs)</label><input type="number" inputmode="decimal" placeholder="168" step="0.1" value="${bd.weight}" onchange="(function(v){const b={...getDayState('body',{})};b.weight=v;setDayState('body',b)})(this.value)"></div>
+    <div class="f-row"><label>Waist (in)</label><input type="number" inputmode="decimal" step="0.25" value="${bd.waist}" onchange="(function(v){const b={...getDayState('body',{})};b.waist=v;setDayState('body',b)})(this.value)"></div>
+    <div class="f-row"><label>Belly (in)</label><input type="number" inputmode="decimal" step="0.25" value="${bd.belly}" onchange="(function(v){const b={...getDayState('body',{})};b.belly=v;setDayState('body',b)})(this.value)"></div>
+    <div class="f-row"><label>Hips (in)</label><input type="number" inputmode="decimal" step="0.25" value="${bd.hips}" onchange="(function(v){const b={...getDayState('body',{})};b.hips=v;setDayState('body',b)})(this.value)"></div>
+    <div class="f-row"><label>Right thigh (in)</label><input type="number" inputmode="decimal" step="0.25" value="${bd.rightThigh}" onchange="(function(v){const b={...getDayState('body',{})};b.rightThigh=v;setDayState('body',b)})(this.value)"></div>
+    <div class="f-row"><label>Left thigh (in)</label><input type="number" inputmode="decimal" step="0.25" value="${bd.leftThigh}" onchange="(function(v){const b={...getDayState('body',{})};b.leftThigh=v;setDayState('body',b)})(this.value)"></div>
+  </div>
+  <button class="p-btn" onclick="saveBodyLog()">Save to history</button></div>`;
+  if(S.bodyLogs.length>1){
+    h+=`<div class="card"><div class="card-hdr">Weight trend</div><div class="chart-box"><canvas id="body-chart"></canvas></div></div>`;
+  }
+  if(S.bodyLogs.length>0){
+    h+=`<div class="sec-lbl">Measurement history</div>`;
+    S.bodyLogs.slice(-5).reverse().forEach(log=>{
+      h+=`<div class="card" style="padding:10px 12px;margin-bottom:7px">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:5px">${log.date}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${log.weight?`<span style="font-size:13px;font-weight:700;color:var(--text1)">${log.weight} lbs</span>`:""}
+          ${log.waist?`<span style="font-size:12px;color:var(--text2)">Waist: ${log.waist}"</span>`:""}
+          ${log.belly?`<span style="font-size:12px;color:var(--text2)">Belly: ${log.belly}"</span>`:""}
+          ${log.hips?`<span style="font-size:12px;color:var(--text2)">Hips: ${log.hips}"</span>`:""}
+          ${log.rightThigh?`<span style="font-size:12px;color:var(--text2)">R thigh: ${log.rightThigh}"</span>`:""}
+          ${log.leftThigh?`<span style="font-size:12px;color:var(--text2)">L thigh: ${log.leftThigh}"</span>`:""}
+        </div>
+      </div>`;
+    });
+  }
+  return h;
+}
+
+function renderHealth(){
+  const k=dkey();
+  const sl=getSleep();
+  const nut=getNutrition();
+  const cy=getCycle();
+  const pct=Math.min(100,Math.round((nut.water/84)*100));
+
+  let h=`<div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px">${fmtDateFull(selDate())}</div>`;
+
+  // ── Sleep ──────────────────────────────────────────
+  h+=`<div class="sec-lbl">Sleep</div>
+  <div class="card"><div class="card-hdr">Sleep log</div>
+  <div class="g2">
+    <div class="f-row"><label>Garmin sleep score</label><input type="number" inputmode="numeric" placeholder="e.g. 72" value="${sl.score}" onchange="setSleep('score',this.value)"></div>
+    <div class="f-row"><label>Hours slept</label><input type="number" inputmode="decimal" placeholder="7.5" step="0.5" value="${sl.hours}" onchange="setSleep('hours',this.value)"></div>
+  </div>
+  <div class="f-row"><label>Subjective quality (1 = terrible · 5 = excellent)</label>
+  <div style="display:flex;gap:5px">${[1,2,3,4,5].map(n=>`<button style="flex:1;padding:8px 3px;border:0.5px solid ${sl.quality===n?"var(--teal)":"var(--border2)"};border-radius:var(--radius-sm);background:${sl.quality===n?"var(--teal-light)":"none"};color:${sl.quality===n?"var(--teal)":"var(--text2)"};cursor:pointer;font-family:inherit;font-size:13px;font-weight:600" onclick="setSleep('quality',${n});render()">${n}</button>`).join("")}
+  </div></div>
+  <div class="upload-zone" onclick="document.getElementById('sl-up').click()">
+    ${S.uploadedImgs[k+"-sleep"]?`<img class="up-preview" src="${S.uploadedImgs[k+"-sleep"]}">`:
+    `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="margin:0 auto;color:var(--teal)"><path d="M12 16V8M8 12l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="3" y="3" width="18" height="18" rx="3" stroke="var(--border2)" stroke-width="1"/></svg>
+    <div style="font-size:13px;color:var(--text2);margin-top:6px;font-weight:600">Sleep graph or stage summary</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:2px">Screenshot from Garmin Connect</div>`}
+  </div>
+  <input type="file" id="sl-up" accept="image/*" style="display:none" onchange="handleUpload(event,'${k}-sleep')">
+  </div>`;
+
+  // ── Nutrition ──────────────────────────────────────
+  h+=`<div class="sec-lbl">Nutrition</div>
+  <div class="card"><div class="card-hdr">MFP screenshot</div>
+  <div class="upload-zone" onclick="document.getElementById('mfp-up').click()">
+    ${S.uploadedImgs[k+"-mfp"]?`<img class="up-preview" src="${S.uploadedImgs[k+"-mfp"]}">`:
+    `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="margin:0 auto;color:var(--teal)"><path d="M12 16V8M8 12l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="3" y="3" width="18" height="18" rx="3" stroke="var(--border2)" stroke-width="1"/></svg>
+    <div style="font-size:13px;color:var(--text2);margin-top:6px;font-weight:600">MFP daily summary</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:2px">Screenshot of macro totals</div>`}
+  </div>
+  <input type="file" id="mfp-up" accept="image/*" style="display:none" onchange="handleUpload(event,'${k}-mfp')">
+  <div class="g2" style="margin-top:8px">
+    <div class="f-row"><label>Calories</label><input type="number" inputmode="numeric" placeholder="1840" value="${nut.cals}" onchange="setNutrition('cals',this.value)"></div>
+    <div class="f-row"><label>Protein (g) · target 185</label><input type="number" inputmode="numeric" placeholder="185" value="${nut.protein}" onchange="setNutrition('protein',this.value)"></div>
+    <div class="f-row"><label>Carbs (g) · target 185</label><input type="number" inputmode="numeric" placeholder="185" value="${nut.carbs}" onchange="setNutrition('carbs',this.value)"></div>
+    <div class="f-row"><label>Fat (g) · target 41</label><input type="number" inputmode="numeric" placeholder="41" value="${nut.fat}" onchange="setNutrition('fat',this.value)"></div>
+  </div></div>
+  <div class="card"><div class="card-hdr">Hydration</div>
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+    <span style="font-size:24px;font-weight:700;color:var(--text1)">${nut.water} oz</span>
+    <span style="font-size:12px;color:var(--text2)">84 oz daily minimum</span>
+  </div>
+  <div class="hydro-track"><div class="hydro-fill" style="width:${pct}%"></div></div>
+  <div style="font-size:11px;color:var(--text2);margin-bottom:10px">${pct}% of minimum</div>
+  <div style="display:flex;gap:5px;margin-bottom:6px">
+    ${[8,12,16,20].map(oz=>`<button style="flex:1;padding:7px 2px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:none;cursor:pointer;font-size:12px;font-family:inherit;font-weight:600;color:var(--text2)" onclick="setNutrition('water',getNutrition().water+${oz});render()">+${oz}</button>`).join("")}
+  </div>
+  <div style="display:flex;gap:5px">
+    ${[32,40,64].map(oz=>`<button style="flex:1;padding:7px 2px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:none;cursor:pointer;font-size:12px;font-family:inherit;font-weight:600;color:var(--text2)" onclick="setNutrition('water',getNutrition().water+${oz});render()">+${oz}</button>`).join("")}
+    <button style="flex:1;padding:7px 2px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:none;cursor:pointer;font-size:12px;font-family:inherit;color:var(--text3)" onclick="setNutrition('water',0);render()">Reset</button>
+  </div></div>`;
+
+  // ── Cycle ──────────────────────────────────────────
+  h+=`<div class="sec-lbl">Cycle</div>
+  <div class="card"><div class="card-hdr">Cycle tracking</div>
+  <div style="font-size:11px;color:var(--text2);margin-bottom:8px;line-height:1.5">Auto-filled from yesterday. Type a new number to override — restart count when your period begins.</div>
+  <div class="g2">
+    <div class="f-row"><label>Cycle day</label><input type="number" inputmode="numeric" min="1" max="35" placeholder="e.g. 20" value="${cy.day}" onchange="setCycle('day',this.value);updateBadges()"></div>
+    <div class="f-row"><label>Cycle length (days)</label><input type="number" inputmode="numeric" placeholder="28" value="${cy.length||""}" onchange="setCycle('length',this.value)"></div>
+  </div>
+  <div class="card-hdr" style="margin-top:6px">Flow</div>
+  <div class="flow-row">`;
+  FLOW_OPTS.forEach(f=>{ h+=`<button class="flow-btn${cy.flow===f?" sel":""}" onclick="setCycle('flow','${f}');render()">${f}</button>`; });
+  h+=`</div>
+  <div class="card-hdr" style="margin-top:10px">Symptoms</div>
+  <div class="sym-grid">`;
+  SYMS.forEach(sym=>{
+    const sel=cy.symptoms.includes(sym);
+    h+=`<button class="sym-btn${sel?" sel":""}" onclick="toggleSymDay('${sym}')">${sym}</button>`;
+  });
+  h+=`</div>
+  <div class="f-row" style="margin-top:8px"><label>Notes</label><textarea placeholder="Anything else to note..." onchange="setCycle('notes',this.value)">${cy.notes}</textarea></div>`;
+  if(cy.day){
+    const day=parseInt(cy.day);
+    let phase,advice,pColor;
+    if(day<=7){phase="Menstruation";advice="Moderate effort. Prioritize form over load. Increase iron-rich foods.";pColor="var(--pink-light)";}
+    else if(day<=13){phase="Late follicular — BEST WINDOW";advice="Push hardest here. PRs, longest runs, highest threshold effort.";pColor="var(--teal-light)";}
+    else if(day<=17){phase="Ovulation";advice="Peak power output. Best window for Sunday hill and sprint sessions.";pColor="var(--green-light)";}
+    else{phase="Luteal";advice="Conservative on load. Add 20–30g carbs on training days. Add 16 oz water daily. Run by effort not pace.";pColor="var(--orange-light)";}
+    h+=`<div style="background:${pColor};border-radius:var(--radius-sm);padding:10px 12px;margin-top:8px">
+      <div style="font-size:12px;font-weight:700;color:var(--text1);margin-bottom:2px">${phase}</div>
+      <div style="font-size:11px;color:var(--text2);line-height:1.5">${advice}</div>
+    </div>`;
+  }
+  h+=`</div>`;
+
+  // ── Body ───────────────────────────────────────────
+  h+=`<div class="sec-lbl">Body metrics</div>`;
+  h+=renderLogBody();
+
+  // ── Single AI summary button ───────────────────────
+  h+=`<div class="sec-lbl">Daily health summary</div>
+  <div class="card">
+    <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:10px">Tap to generate a single AI analysis covering sleep, nutrition, hydration, cycle phase, and recovery as a complete picture.</div>
+    <button class="p-btn" onclick="genHealthSummary()">Generate AI health summary →</button>
+    ${!getApiKey()?`<div style="font-size:11px;color:var(--text2);text-align:center;margin-top:6px">Add your API key in settings to enable AI analysis.</div>`:""}
+  </div>`;
+  const hs=S.summaries[k+"-health"];
+  if(hs) h+=renderSum(hs);
+
+  // ── Weekly review ──────────────────────────────────
+  h+=`<div class="sec-lbl">Weekly review</div>
+  <div class="card">
+    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:10px">At end of each week: generate your AI weekly review, then copy and paste the summary into Claude.</div>
+    <button class="p-btn" onclick="genWeeklyReview()">Generate weekly review →</button>
+  </div>`;
+  const wr=S.summaries[wkey()+"-weekly"];
+  if(wr){
+    h+=renderSum(wr);
+    h+=`<button class="s-btn" onclick="copyWeeklySummary()">Copy weekly summary for Claude</button>`;
+    h+=`<div style="font-size:11px;color:var(--text2);text-align:center;margin-top:6px;line-height:1.5">Paste this into your Claude conversation to review the week.</div>`;
+  }
+
+  document.getElementById("main-content").innerHTML=h;
+  updateBadges();
+  if(S.bodyLogs.length>1) drawBodyChart();
+}
+
+function renderProgress(){
+  const totalWks=PLAN.blocks.reduce((a,b)=>a+b.weeks.length,0);
+  const doneWks=PLAN.blocks.slice(0,S.cb).reduce((a,b)=>a+b.weeks.length,0)+S.cw;
+  const pct=Math.round((doneWks/totalWks)*100);
+  const z2Entries=Object.keys(S.cadence).filter(k=>S.cadence[k]?.z2).map(k=>parseFloat(S.cadence[k].z2));
+  const thEntries=Object.keys(S.cadence).filter(k=>S.cadence[k]?.th).map(k=>parseFloat(S.cadence[k].th));
+  const lastZ2=z2Entries.slice(-1)[0]||"–";
+  const lastTh=thEntries.slice(-1)[0]||"–";
+  const sessCount=Object.keys(S.logs).filter(k=>Object.keys(S.logs[k]).length>0).length;
+  const lastWeight=S.bodyLogs.slice(-1)[0]?.weight||"–";
+
+  let h=`<div class="card"><div class="card-hdr">Plan progress</div>
+  <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+    <span style="font-size:12px;color:var(--text2)">${blk().name} · ${wk().name}</span>
+    <span style="font-size:12px;font-weight:700;color:var(--teal)">${pct}%</span>
+  </div>
+  <div class="prog-wrap"><div class="prog-bar" style="width:${pct}%"></div></div>
+  <div style="font-size:10px;color:var(--text3);margin-top:4px">${doneWks} of ${totalWks} weeks complete</div>
+  </div>`;
+
+  h+=`<div class="stat-grid">
+    <div class="stat-card"><div class="stat-lbl">Sessions logged</div><div class="stat-val">${sessCount}</div></div>
+    <div class="stat-card"><div class="stat-lbl">Current weight</div><div class="stat-val">${lastWeight}</div><div class="stat-sub">lbs · goal: recomp</div></div>
+    <div class="stat-card"><div class="stat-lbl">Last Z2 cadence</div><div class="stat-val">${lastZ2}</div><div class="stat-sub">Target: 163+ spm</div></div>
+    <div class="stat-card"><div class="stat-lbl">Last threshold cad.</div><div class="stat-val">${lastTh}</div><div class="stat-sub">Target: 170+ spm</div></div>
+  </div>`;
+
+  if(z2Entries.length>1){
+    h+=`<div class="card"><div class="card-hdr">Zone 2 cadence trend</div><div class="chart-box"><canvas id="cad-chart"></canvas></div><div style="font-size:10px;color:var(--text3);margin-top:4px">Dashed line = 163 spm Block 1 target</div></div>`;
+  }
+  if(S.bodyLogs.length>1){
+    h+=`<div class="card"><div class="card-hdr">Weight trend</div><div class="chart-box"><canvas id="weight-chart"></canvas></div></div>`;
+  }
+
+  const warnFlags=[];
+  Object.keys(S.summaries).forEach(k=>{
+    const s=S.summaries[k];
+    if(s?.flags) s.flags.filter(f=>f.type==="warn").forEach(f=>warnFlags.push({date:s.date,text:f.text}));
+  });
+  if(warnFlags.length>0){
+    h+=`<div class="sec-lbl">Recent flags requiring attention</div>`;
+    warnFlags.slice(-5).reverse().forEach(f=>{
+      h+=`<div class="card" style="padding:10px 12px;margin-bottom:6px;border-left:2px solid var(--orange);border-radius:0 var(--radius-sm) var(--radius-sm) 0">
+        <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:2px;text-transform:uppercase;letter-spacing:0.04em">${f.date}</div>
+        <div style="font-size:12px;color:var(--text1);line-height:1.45">${f.text}</div>
+      </div>`;
+    });
+  } else {
+    h+=`<div style="text-align:center;padding:28px 20px;color:var(--text2);font-size:13px">No flags yet — log sessions to see trends here.</div>`;
+  }
+
+  document.getElementById("main-content").innerHTML=h;
+  if(z2Entries.length>1) drawCadChart(z2Entries);
+  if(S.bodyLogs.length>1) drawWeightChart("weight-chart");
+}
+
+function renderPlan(){
+  let h=`<div class="wk-nav">
+    <button class="wk-btn" onclick="prevWeek()">&#8592;</button>
+    <div style="text-align:center">
+      <div style="font-size:15px;font-weight:700;color:var(--text1)">${blk().name} · ${wk().name}</div>
+      <div style="font-size:11px;color:var(--text2)">${wk().sub}</div>
+    </div>
+    <button class="wk-btn" onclick="nextWeek()">&#8594;</button>
+  </div>`;
+
+  PLAN.blocks.forEach((block,bi)=>{
+    h+=`<div class="sec-lbl">${block.name} — ${block.sub}</div>`;
+    block.weeks.forEach((week,wi)=>{
+      const wsd=getWSD(bi,wi);
+      const wend=new Date(wsd); wend.setDate(wend.getDate()+6);
+      const isCurr=bi===S.cb&&wi===S.cw;
+      const hasCamp=wsd<=CAMPING_END&&wend>=CAMPING_START;
+      const hasTrav=wsd<=TRAVEL_END&&wend>=TRAVEL_START;
+      h+=`<div class="card" style="margin-bottom:6px;${isCurr?"border-color:var(--teal);border-width:1.5px;":""}cursor:pointer" onclick="jumpTo(${bi},${wi})">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:${isCurr?"var(--teal)":"var(--text1)"}">${week.name}</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:2px">${week.sub}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">${fmtDate(wsd)} – ${fmtDate(wend)}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+            ${isCurr?`<span class="pill pt">Current</span>`:`<span style="font-size:12px;color:var(--text3)">&#9654;</span>`}
+            ${hasCamp?`<span class="pill pg">Camping</span>`:""}
+            ${hasTrav?`<span class="pill pp">Travel</span>`:""}
+          </div>
+        </div>
+      </div>`;
+    });
+  });
+  document.getElementById("main-content").innerHTML=h;
+}
+
+function renderSum(sum){
+  let h=`<div class="sum-card"><div class="sum-hdr"><div class="sum-hdr-title">AI session summary</div><div class="sum-hdr-sub">${sum.date}</div></div><div class="sum-body">`;
+  (sum.flags||[]).forEach(f=>{
+    h+=`<div class="flag"><div class="f-dot f-${f.type}"></div><div><div class="f-lbl">${f.label}</div><div class="f-txt">${f.text}</div></div></div>`;
+  });
+  h+=`</div></div>`;
+  return h;
+}
+
+function render(){
+  if(S.tab==="today") renderToday();
+  else if(S.tab==="log") renderLog();
+  else if(S.tab==="health") renderHealth();
+  else if(S.tab==="progress") renderProgress();
+  else if(S.tab==="plan") renderPlan();
+}
+
+function drawCadChart(data){
+  try{
+    const ctx=document.getElementById("cad-chart")?.getContext("2d");
+    if(!ctx) return;
+    new Chart(ctx,{type:"line",data:{
+      labels:data.map((_,i)=>`S${i+1}`),
+      datasets:[
+        {label:"Z2 spm",data,borderColor:"#1A7A6E",backgroundColor:"rgba(26,122,110,0.1)",tension:0.3,pointRadius:4,fill:true},
+        {label:"Target",data:data.map(()=>163),borderColor:"#E8833A",borderDash:[5,5],pointRadius:0,fill:false}
+      ]
+    },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:148,max:182,grid:{color:"rgba(128,128,128,0.1)"}},x:{grid:{display:false}}}}});
+  }catch(e){}
+}
+function drawWeightChart(id){
+  try{
+    const ctx=document.getElementById(id)?.getContext("2d");
+    if(!ctx) return;
+    new Chart(ctx,{type:"line",data:{
+      labels:S.bodyLogs.map(l=>l.date||"–"),
+      datasets:[{label:"Weight",data:S.bodyLogs.map(l=>parseFloat(l.weight)||null),borderColor:"#1A7A6E",backgroundColor:"rgba(26,122,110,0.1)",tension:0.3,pointRadius:4,fill:true}]
+    },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:"rgba(128,128,128,0.1)"}},x:{grid:{display:false}}}}});
+  }catch(e){}
+}
+function drawBodyChart(){ drawWeightChart("body-chart"); }
+
+function selDay(d){S.selDay=d;render();}
+function prevDay(){const i=DAYS.indexOf(S.selDay);S.selDay=DAYS[(i-1+7)%7];render();}
+function nextDay(){const i=DAYS.indexOf(S.selDay);S.selDay=DAYS[(i+1)%7];render();}
+function prevWeek(){
+  if(S.cw>0)S.cw--;
+  else if(S.cb>0){S.cb--;S.cw=PLAN.blocks[S.cb].weeks.length-1;}
+  saveState();render();
+}
+function nextWeek(){
+  const bl=blk();
+  if(S.cw<bl.weeks.length-1)S.cw++;
+  else if(S.cb<PLAN.blocks.length-1){S.cb++;S.cw=0;}
+  saveState();render();
+}
+function goToday(){
+  const today=new Date();
+  const ps=getPlanStart();
+  const diffDays=Math.floor((today-ps)/(1000*60*60*24));
+  if(diffDays<0){S.cb=0;S.cw=0;S.selDay=DAYS[0];}
+  else{
+    let weekNum=Math.floor(diffDays/7);
+    const dayIdx=diffDays%7;
+    let bi=0,wi=0,found=false;
+    for(let b=0;b<PLAN.blocks.length&&!found;b++){
+      for(let w=0;w<PLAN.blocks[b].weeks.length&&!found;w++){
+        if(weekNum===0){bi=b;wi=w;found=true;}
+        weekNum--;
+      }
+    }
+    if(!found){bi=PLAN.blocks.length-1;wi=PLAN.blocks[bi].weeks.length-1;}
+    S.cb=bi;S.cw=wi;S.selDay=DAYS[Math.min(dayIdx,6)];
+  }
+  saveState();showTab('today');
+}
+function jumpTo(bi,wi){S.cb=bi;S.cw=wi;saveState();showTab("today");}
+function tog(id){S.open[id]=!S.open[id];render();}
+function setLogTab(t){S.logTab=t;render();}
+function clearSet(sid,ei,si){const k=dkey();if(S.logs[k]?.[sid]?.sets?.[`${ei}-${si}`])delete S.logs[k][sid].sets[`${ei}-${si}`];saveState();render();}
+function saveBodyLog(){
+  const bd=getDayState('body',{});
+  if(!bd.date&&!bd.weight) return;
+  S.bodyLogs.push({...bd});
+  saveState();render();
+  alert("Measurement saved to history.");
+}
+function handleUpload(e,key){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{S.uploadedImgs[key]=ev.target.result;saveState();render();};
+  reader.readAsDataURL(file);
+}
+
+function showThinking(msg){
+  const mc=document.getElementById("main-content");
+  const el=document.createElement("div");el.id="ai-thinking";el.className="ai-think";
+  el.innerHTML=`<div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div><span style="font-size:13px;color:var(--text2)">${msg}</span>`;
+  mc.appendChild(el);
+}
+function hideThinking(){const el=document.getElementById("ai-thinking");if(el)el.remove();}
+
+async function aiCall(prompt,imgBase64,mimeType){
+  const apiKey=getApiKey();
+  if(!apiKey) throw new Error("No API key. Open settings to add your Anthropic API key.");
+  const content=imgBase64?[{type:"image",source:{type:"base64",media_type:mimeType,data:imgBase64}},{type:"text",text:prompt}]:[{type:"text",text:prompt}];
+  const resp=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:"claude-opus-4-5",max_tokens:1000,messages:[{role:"user",content}]})
+  });
+  if(!resp.ok){const err=await resp.json();throw new Error(err.error?.message||"API error "+resp.status);}
+  const data=await resp.json();
+  const text=data.content?.map(c=>c.text||"").join("").trim();
+  return JSON.parse(text.replace(/```json|```/g,"").trim());
+}
+
+async function genSummary(){
+  const k=dkey(),dd=dayData();
+  const items=[];
+  const sessions=dd.sessions||(dd.type==="travel_train"?[TRAVEL_STR]:[]);
+  sessions.forEach(sess=>{
+    if(!sess.exercises)return;
+    sess.exercises.forEach((ex,ei)=>{
+      const sets=[];
+      for(let si=0;si<ex.s;si++){const w=getLog(sess.id,ei,si,'w'),r=getLog(sess.id,ei,si,'r');if(w||r)sets.push(`set ${si+1}: ${w||"?"}lbs×${r||"?"} reps`);}
+      if(sets.length)items.push(`${ex.n}: ${sets.join(", ")} (prescribed: ${ex.s}×${ex.r})`);
+    });
+    const fb=getFb(sess.id);if(fb)items.push(`Notes: ${fb}`);
+  });
+  const ck=S.cadence[k];
+  if(ck?.z2)items.push(`Z2 cadence: ${ck.z2} spm (target 163+)`);
+  if(ck?.th)items.push(`Threshold cadence: ${ck.th} spm (target 170+)`);
+  if(S.logs[k]?.dayNote)items.push(`Day notes: ${S.logs[k].dayNote}`);
+  if(getTightness().length)items.push(`Tightness: ${getTightness().join(", ")}`);
+  // collect RPE per session
+  sessions.forEach(sess=>{const rpe=S.logs[k]?.[sess.id]?.rpe;if(rpe)items.push(`${sess.label} RPE: ${rpe}/10 (${rpeLabel(rpe)})`);});
+  const isTrav=wk().istravel;
+  const prompt=`Exercise physiologist reviewing session for 36yo female athlete. 168 lbs, 72.5 lbs lean muscle mass. Menstrual cycle day ${getCycle().day||"unknown"}. Current block: ${isTrav?"TRAVEL MAINTENANCE":blk().name+" "+wk().name}. Day: ${S.selDay} (${fmtDateFull(selDate())}). HRV: ${getHrv()||"not logged"}. Recovery: ${getRecovery()!==null?getRecovery()+"/5":"not logged"}. Hydration: ${getNutrition().water}oz. ${isTrav?"Focus flags on: protein adequacy for muscle preservation, aerobic maintenance, recovery quality.":""}Session data: ${items.join("; ")||"minimal data logged"}. Generate 3–5 specific, actionable flags. Respond ONLY with a JSON array: [{"type":"good|warn|info","label":"2-4 words","text":"1-2 specific sentences"}]. No markdown, no explanation, just the JSON array.`;
+  showThinking("Analyzing your session...");
+  try{
+    const flags=await aiCall(prompt,null,null);
+    S.summaries[k]={date:`${isTrav?"Travel":blk().name+" "+wk().name} · ${S.selDay} ${fmtDate(selDate())}`,flags};saveState();
+  }catch(e){
+    alert(e.message||"AI analysis failed. Check your API key in settings.");
+  }
+  hideThinking();render();
+}
+
+async function analyzeGarmin(){
+  const k=dkey();
+  const imgKey=Object.keys(S.uploadedImgs).find(x=>x.startsWith(k)&&(x.endsWith("-hr")||x.endsWith("-cad")||x.endsWith("-other")));
+  if(!imgKey){alert("No Garmin screenshot found.");return;}
+  const raw=S.uploadedImgs[imgKey];
+  const imgData=raw.split(",")[1],mimeType=raw.split(";")[0].split(":")[1];
+  const mhr=getMaxHR();
+  const hrZones=`HR zones (Max HR ${mhr} bpm, LTHR 174 bpm): Z1 Warm-up ${Math.round(mhr*0.5)}–${Math.round(mhr*0.6)} bpm (50–60%), Z2 Easy ${Math.round(mhr*0.6)}–${Math.round(mhr*0.7)} bpm (60–70%), Z3 Aerobic ${Math.round(mhr*0.7)}–${Math.round(mhr*0.8)} bpm (70–80%), Z4 Threshold ${Math.round(mhr*0.8)}–${Math.round(mhr*0.9)} bpm (80–90%), Z5 Maximum ${Math.round(mhr*0.9)}–${mhr} bpm (90–100%).`;
+  const cadColors=`Garmin cadence graph color key: red=<151 spm (below target), orange=151–162 spm (approaching target), green=163–173 spm (target zone), blue=174–185 spm (above target), purple=>185 spm (high). Training targets: Zone 2 runs 163+ spm, threshold runs 170+ spm.`;
+  const prompt=`Exercise physiologist analyzing Garmin Connect screenshot for 36yo female athlete, 168 lbs. ${blk().name} ${wk().name}, ${S.selDay} ${fmtDateFull(selDate())}. HRV: ${getHrv()||"unknown"}. Cycle day: ${getCycle().day||"unknown"}. ${hrZones} ${cadColors} Analyze the visible screenshot data: heart rate zone distribution relative to the zones above, cadence colors and whether they indicate target zone compliance, pace, RPE vs prescription, and training load implications. Give 3–5 specific flags referencing the actual zone numbers and cadence colors visible. Respond ONLY with JSON array: [{"type":"good|warn|info","label":"2-4 words","text":"specific observation with implication"}]. No markdown, just JSON.`;
+  showThinking("Analyzing Garmin data...");
+  try{
+    const flags=await aiCall(prompt,imgData,mimeType);
+    S.summaries[k+"-garmin"]={date:`Garmin · ${blk().name} ${wk().name} · ${S.selDay}`,flags};saveState();
+  }catch(e){alert(e.message||"Garmin analysis failed.");}
+  hideThinking();render();
+}
+
+async function analyzeMFP(){
+  const k=dkey();
+  const raw=S.uploadedImgs[k+"-mfp"];if(!raw){alert("No MFP screenshot found.");return;}
+  const imgData=raw.split(",")[1],mimeType=raw.split(";")[0].split(":")[1];
+  const prompt=`Exercise physiologist analyzing MyFitnessPal screenshot for 36yo female athlete, 168 lbs, 72.5 lbs lean muscle mass. Daily macro targets: 185g protein, 185g carbs, 41g fat. Today: ${blk().name} ${wk().name} ${S.selDay}. HRV: ${getHrv()||"unknown"}. Cycle day: ${getCycle().day||"unknown"}. Hydration logged: ${getNutrition().water}oz (84oz minimum). Analyze macros vs targets, protein adequacy for LMM preservation, carb timing for training, and recomp implications. Give 3–5 specific flags. Respond ONLY with JSON array: [{"type":"good|warn|info","label":"2-4 words","text":"specific observation"}]. No markdown, just JSON.`;
+  showThinking("Analyzing nutrition...");
+  try{
+    const flags=await aiCall(prompt,imgData,mimeType);
+    S.summaries[k+"-nutrition"]={date:`Nutrition · ${fmtDate(selDate())}`,flags};saveState();
+  }catch(e){alert(e.message||"Nutrition analysis failed.");}
+  hideThinking();render();
+}
+
+async function analyzeSleep(){
+  const k=dkey();
+  const raw=S.uploadedImgs[k+"-sleep"];if(!raw){alert("No sleep screenshot found.");return;}
+  const imgData=raw.split(",")[1],mimeType=raw.split(";")[0].split(":")[1];
+  const sl=getSleep();
+  const cy=getCycle();
+  const prompt=`Exercise physiologist analyzing Garmin sleep data for 36yo female athlete. Garmin score: ${sl.score||"see image"}. Hours: ${sl.hours||"see image"}. Subjective quality: ${sl.quality!==null?sl.quality+"/5":"not logged"}. Cycle day: ${cy.day||"unknown"}. HRV: ${getHrv()||"unknown"}. Training block: ${blk().name} ${wk().name}. Analyze sleep stage distribution, recovery adequacy for today's training, and whether training load should be adjusted. Give 3–5 specific flags. Respond ONLY with JSON array: [{"type":"good|warn|info","label":"2-4 words","text":"specific observation with training implication"}]. No markdown, just JSON.`;
+  showThinking("Analyzing sleep...");
+  try{
+    const flags=await aiCall(prompt,imgData,mimeType);
+    S.summaries[k+"-sleep"]={date:`Sleep · ${fmtDate(selDate())}`,flags};saveState();
+  }catch(e){alert(e.message||"Sleep analysis failed.");}
+  hideThinking();render();
+}
+
+async function genHealthSummary(){
+  const k=dkey();
+  const sl=getSleep();
+  const nut=getNutrition();
+  const cy=getCycle();
+  const sleepImg=S.uploadedImgs[k+"-sleep"];
+  const mfpImg=S.uploadedImgs[k+"-mfp"];
+  // Build a rich text context; include first available image if present
+  const imgRaw=sleepImg||mfpImg||null;
+  const imgData=imgRaw?imgRaw.split(",")[1]:null;
+  const mimeType=imgRaw?imgRaw.split(";")[0].split(":")[1]:null;
+  const prompt=`Exercise physiologist generating a comprehensive daily health analysis for a 36yo female athlete (168 lbs, 72.5 lbs lean muscle mass). Date: ${fmtDateFull(selDate())}. Block: ${blk().name} ${wk().name}.
+
+SLEEP: Garmin score ${sl.score||"not logged"}, hours ${sl.hours||"not logged"}, subjective quality ${sl.quality!==null?sl.quality+"/5":"not logged"}.
+NUTRITION: Calories ${nut.cals||"not logged"}, protein ${nut.protein||"not logged"}g (target 185g), carbs ${nut.carbs||"not logged"}g (target 185g), fat ${nut.fat||"not logged"}g (target 41g), hydration ${nut.water}oz (target 84oz min).
+CYCLE: Day ${cy.day||"unknown"}, flow ${cy.flow||"not logged"}, symptoms: ${cy.symptoms.join(", ")||"none"}.
+HRV: ${getHrv()||"not logged"}. Recovery score: ${getRecovery()!==null?getRecovery()+"/5":"not logged"}.
+Tightness/soreness: ${getTightness().join(", ")||"none"}.
+${sleepImg?"Sleep screenshot uploaded — analyze it if visible.":""}${mfpImg?" MFP screenshot uploaded — analyze it if visible.":""}
+
+Synthesize ALL inputs as one integrated picture. Flag how tonight's sleep affects today's training readiness, whether nutrition supports the training demand, how cycle phase should modify effort, and overall recovery status. Give 4–6 specific, interconnected flags — not isolated observations. Respond ONLY with JSON array: [{"type":"good|warn|info","label":"2-4 words","text":"specific integrated observation"}]. No markdown, just JSON.`;
+  showThinking("Analyzing your health data...");
+  try{
+    const flags=await aiCall(prompt,imgData,mimeType);
+    S.summaries[k+"-health"]={date:`Health summary · ${fmtDate(selDate())}`,flags};saveState();
+  }catch(e){alert(e.message||"Health summary failed. Check your API key in settings.");}
+  hideThinking();render();
+}
+
+async function genWeeklyReview(){
+  const z2Last=Object.values(S.cadence).filter(c=>c?.z2).slice(-1)[0]?.z2||"not logged";
+  const lastWt=S.bodyLogs.slice(-1)[0]?.weight||"not logged";
+  const warnTexts=[];
+  Object.keys(S.summaries).forEach(k=>{const s=S.summaries[k];if(s?.flags)s.flags.filter(f=>f.type==="warn").forEach(f=>warnTexts.push(f.text));});
+  const cy=getCycle();
+  const nut=getNutrition();
+  const prompt=`Exercise physiologist generating weekly review for 36yo female athlete, 168 lbs, 72.5 lbs lean muscle mass, regular cycle. ${blk().name} ${wk().name} (${wk().sub}). ${wk().istravel?"TRAVEL MAINTENANCE BLOCK — focus on LMM preservation status, aerobic base maintenance, and return-to-training readiness.":""}HRV: ${getHrv()||"not logged"}. Recovery: ${getRecovery()!==null?getRecovery()+"/5":"not logged"}. Z2 cadence last: ${z2Last} spm (target 163+). Weight: ${lastWt} lbs. Cycle day: ${cy.day||"unknown"}, symptoms: ${cy.symptoms.join(",")||"none"}. Tightness: ${getTightness().join(",")||"none"}. Sessions completed this week: ${Object.keys(S.logs).filter(k=>k.startsWith(wkey())).length}. Hydration: ${nut.water}oz. Flags from this week: ${warnTexts.join("; ")||"none"}. Generate 4–6 specific flags covering: what went well, what needs attention, cadence progress, recovery quality, next week's cycle phase and training implications, and one priority coaching recommendation. Respond ONLY with JSON array: [{"type":"good|warn|info","label":"2-4 words","text":"specific actionable insight"}]. No markdown, just JSON.`;
+  showThinking("Generating your weekly review...");
+  try{
+    const flags=await aiCall(prompt,null,null);
+    S.summaries[wkey()+"-weekly"]={date:`Weekly review · ${blk().name} ${wk().name}`,flags};saveState();
+  }catch(e){alert(e.message||"Weekly review failed.");}
+  hideThinking();render();
+}
+
+function copyWeeklySummary(){
+  const wr=S.summaries[wkey()+"-weekly"];
+  const z2Last=Object.values(S.cadence).filter(c=>c?.z2).slice(-1)[0]?.z2||"not logged";
+  const lastWt=S.bodyLogs.slice(-1)[0]?.weight||"not logged";
+  const flagText=wr?.flags?.map(f=>`[${f.type.toUpperCase()}] ${f.label}: ${f.text}`).join("\n")||"No flags";
+  const cy=getCycle();
+  const nut=getNutrition();
+  const msg=`WEEKLY TRAINING DATA — ${blk().name} ${wk().name}\n\nHRV: ${getHrv()||"not logged"}\nRecovery score: ${getRecovery()!==null?getRecovery()+"/5":"not logged"}\nZ2 cadence: ${z2Last} spm (target 163+)\nWeight: ${lastWt} lbs\nCycle day: ${cy.day||"not logged"}, symptoms: ${cy.symptoms.join(", ")||"none"}\nTightness: ${getTightness().join(", ")||"none"}\nSessions logged: ${Object.keys(S.logs).filter(k=>k.startsWith(wkey())).length}\nHydration: ${nut.water} oz\n\nAI weekly review flags:\n${flagText}\n\nPlease: (1) review this week's data, (2) tell me what to adjust for next week, (3) flag anything requiring attention, (4) confirm whether to progress load or hold.`;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(msg).then(()=>alert("Weekly summary copied. Paste it into your Claude conversation.")).catch(()=>{const ta=document.createElement("textarea");ta.value=msg;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);alert("Copied! Paste into Claude.");});
+  } else {
+    const ta=document.createElement("textarea");ta.value=msg;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);alert("Copied! Paste into Claude.");
+  }
+}
+
+function exportBackup(){
+  try{
+    const backup={
+      version:1,
+      exportedAt:new Date().toISOString(),
+      state:S,
+      apiKey:getApiKey(),
+      planStart:localStorage.getItem("hep_plan_start")||"2026-04-06"
+    };
+    const json=JSON.stringify(backup,null,2);
+    const blob=new Blob([json],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    const date=new Date().toISOString().split("T")[0];
+    a.href=url;
+    a.download=`HEP_Backup_${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert("Backup saved as HEP_Backup_"+date+".json\n\nSave this file to iCloud, Google Drive, or email it to yourself. Use it to restore your data if needed.");
+  }catch(e){
+    alert("Export failed: "+e.message);
+  }
+}
+
+function importBackup(){
+  const input=document.createElement("input");
+  input.type="file";
+  input.accept=".json";
+  input.onchange=function(e){
+    const file=e.target.files[0];
+    if(!file)return;
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      try{
+        const backup=JSON.parse(ev.target.result);
+        if(!backup.version||!backup.state){
+          alert("This doesn't look like a valid HEP backup file.");
+          return;
+        }
+        if(!confirm("This will replace all your current data with the backup from "+backup.exportedAt.split("T")[0]+". Are you sure?")){return;}
+        Object.assign(S,backup.state);
+        saveState();
+        if(backup.apiKey)localStorage.setItem("hep_api_key",backup.apiKey);
+        if(backup.planStart)localStorage.setItem("hep_plan_start",backup.planStart);
+        closeSettings();
+        render();
+        alert("Backup restored successfully. All your data is back.");
+      }catch(err){
+        alert("Failed to restore backup: "+err.message+"\n\nMake sure you selected a valid HEP backup file.");
+      }
+    };
+    reader.readAsText(file);
+  };
+  document.body.appendChild(input);
+  input.click();
+  document.body.removeChild(input);
+}
+
+loadState();
+render();
+</script>
+</body>
+</html>
